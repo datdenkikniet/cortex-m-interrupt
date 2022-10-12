@@ -1,3 +1,5 @@
+#![no_std]
+
 // Re-export this path
 pub use cortex_m;
 
