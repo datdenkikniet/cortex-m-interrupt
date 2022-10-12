@@ -1,3 +1,4 @@
 /target
 /Cargo.lock
 /cortex-m-interrupt-macro/target
+/cortex-m-interrupt-macro/Cargo.lock
