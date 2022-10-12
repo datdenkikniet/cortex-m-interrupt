@@ -5,6 +5,8 @@
 pub use cortex_m;
 pub use cortex_m_rt::DefaultHandler_;
 
+use core::task::Waker;
+
 /// Create an [`InterruptHandle`] bound to the interrupt named by `interrupt.
 ///
 /// Usage:
@@ -47,6 +49,13 @@ pub use cortex_m_interrupt_macro::take_nvic_interrupt;
 mod nvic;
 #[cfg(feature = "unstable")]
 pub use nvic::*;
+
+mod ssq;
+use ssq::{Consumer, Producer, SingleSlotQueue};
+
+pub type WakerQueue = SingleSlotQueue<Waker>;
+pub type WakerProducer<'a> = Producer<'a, Waker>;
+pub type WakerConsumer<'a> = Consumer<'a, Waker>;
 
 /// A handle that can be used to register a handler for an interrupt.
 ///
