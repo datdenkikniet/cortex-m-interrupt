@@ -105,11 +105,39 @@ fn build(input: proc_macro::TokenStream, use_rtic_prio: bool) -> proc_macro::Tok
     }.into()
 }
 
+/// Register an `IrqHandle` to the interrupt specified by `interrupt` with RTIC priority `priority`.
+///
+/// Usage:
+///
+/// ```rust,no_compile
+/// use cortex_m_interrupt::{take, IrqHandle};
+/// let irq_handle: IrqHandle = take!(interrupt, priority);
+///
+/// // For example:
+/// let handle = cortex_m_interrupt::take!(stm32f1xx_hal::pac::interrupt::EXTI15_10, 7);
+/// ```
+///
+/// Important to note is that the `priority` is interpreted as RTIC priority, where
+/// a higher priority indicates a higher priority level. If you wish to configure your
+/// interrupt with a raw priority, see [`take_raw_prio!`].
 #[proc_macro]
 pub fn take(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     build(input, true)
 }
 
+/// Register an `IrqHandle` to the interrupt specified by `interrupt` with raw priority `priority`.
+///
+/// Usage:
+///
+/// ```rust,no_compile
+/// use cortex_m_interrupt::{take, IrqHandle};
+/// let irq_handle: IrqHandle = take_raw_prio!(interrupt, priority);
+///
+/// // For example
+/// let handle = cortex_m_interrupt::take_raw_prio!(stm32f1xx_hal::pac::interrupt::EXTI15_10, 254);
+/// ```
+///
+/// The `priority` is not interpreted and written directly to the NVIC priority register.
 #[proc_macro]
 pub fn take_raw_prio(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     build(input, false)
