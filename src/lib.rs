@@ -4,7 +4,7 @@
 pub use cortex_m;
 use cortex_m::{interrupt::InterruptNumber, peripheral::NVIC};
 
-pub use cortex_m_interrupt_macro::{take, take_raw_prio};
+pub use cortex_m_interrupt_macro::{take, take_exception, take_raw_prio};
 
 /// A handle that can be used to register a handler for an interrupt.
 ///
