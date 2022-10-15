@@ -81,3 +81,11 @@ pub unsafe fn determine_prio_bits(nvic: &mut NVIC, placeholder_interrupt: u16) -
 pub fn logical2hw(logical: u8, nvic_prio_bits: u8) -> u8 {
     ((1 << nvic_prio_bits) - logical) << (8 - nvic_prio_bits)
 }
+
+/// Assert that `ISR` is an NVIC-servicable interrupt
+#[inline(always)]
+pub const fn assert_is_nvic_interrupt<ISR>(_: ISR)
+where
+    ISR: InterruptNumber,
+{
+}

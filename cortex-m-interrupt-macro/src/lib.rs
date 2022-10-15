@@ -62,6 +62,8 @@ fn build(input: proc_macro::TokenStream, use_logical_prio: bool) -> proc_macro::
         {
             static mut HANDLER: core::mem::MaybeUninit<fn()> = core::mem::MaybeUninit::uninit();
 
+            const _ASSERT_NVIC_IRQ: () = ::cortex_m_interrupt::assert_is_nvic_interrupt(#interrupt_path);
+
             #[export_name = #interrupt_export_name]
             pub unsafe extern "C" fn isr() {
                 (HANDLER.assume_init())();
