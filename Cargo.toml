@@ -5,20 +5,9 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[features]
-default = [ "rtic-priority" ]
-rtic-priority = [ "cortex-m-rtic" ]
-
 [dependencies]
 cortex-m-interrupt-macro = { path = "./cortex-m-interrupt-macro" }
-atomic-polyfill = "1"
 cortex-m = "0.7"
-stm32f1xx-hal = { version = "0.9", features = [ "stm32f107" ] }
-cortex-m-rtic = { version = "1.0", optional = true }
 
 [dev-dependencies]
 stm32f1xx-hal = { version = "0.9", features = [ "stm32f107" ] }
-
-[[example]]
-name = "rtic_prio"
-required-features = [ "rtic-priority" ]

@@ -4,12 +4,7 @@
 pub use cortex_m;
 use cortex_m::{interrupt::InterruptNumber, peripheral::NVIC};
 
-pub use cortex_m_interrupt_macro::take_raw_prio;
-
-#[cfg(feature = "rtic-priority")]
-pub use cortex_m_interrupt_macro::take;
-#[cfg(feature = "rtic-priority")]
-pub use rtic::export::logical2hw;
+pub use cortex_m_interrupt_macro::{take, take_raw_prio};
 
 /// A handle that can be used to register a handler for an interrupt.
 ///
@@ -62,4 +57,16 @@ pub unsafe fn determine_prio_bits(nvic: &mut NVIC, placeholder_interrupt: u16) -
     let prio_bits = written_prio.leading_ones();
 
     written_prio >> (8 - prio_bits)
+}
+
+/// Convert a logical priority (where higher priority = higher priority level) to
+/// a hardware priority level (where lower priority = higher priority level).
+///
+/// Taken from [`cortex_m_rtic`]
+///
+/// [`cortex_m_rtic`]: https://crates.io/crates/cortex-m-rtic
+#[inline]
+#[must_use]
+pub fn logical2hw(logical: u8, nvic_prio_bits: u8) -> u8 {
+    ((1 << nvic_prio_bits) - logical) << (8 - nvic_prio_bits)
 }
