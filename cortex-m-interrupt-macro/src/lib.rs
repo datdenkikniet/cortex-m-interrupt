@@ -116,7 +116,7 @@ fn build(input: proc_macro::TokenStream, use_logical_prio: bool) -> proc_macro::
 
 /// Register an `IrqHandle` to the interrupt specified by `interrupt` with logical priority `priority`.
 ///
-/// /// Usage:
+/// Usage:
 ///
 /// ```rust,no_compile
 /// use cortex_m_interrupt::{take, IrqHandle};
