@@ -1,117 +1,16 @@
-use proc_macro2::Literal;
-use proc_macro_error::{abort, proc_macro_error};
-use quote::quote;
-use syn::{parse::Parse, token::Comma, Error, Expr, Lit, TypePath};
+use proc_macro2::TokenStream;
+use proc_macro_error::proc_macro_error;
 
-struct TakeInput {
-    interrupt_path: TypePath,
-    priority: Expr,
-}
+mod take;
+use syn::LitStr;
+use take::Take;
 
-impl Parse for TakeInput {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        let interrupt_ident = input
-            .parse()
-            .map_err(|e| Error::new(e.span(), "Expected path to interrupt as first argument."))?;
-
-        input.parse::<Comma>()?;
-
-        let priority = input.parse().map_err(|e| {
-            Error::new(
-                e.span(),
-                "Expected an expression that represents the priority to assign to the interrupt.",
-            )
-        })?;
-
-        Ok(Self {
-            interrupt_path: interrupt_ident,
-            priority,
-        })
-    }
-}
-
-fn build(input: proc_macro::TokenStream, use_logical_prio: bool) -> proc_macro::TokenStream {
-    let input = syn::parse_macro_input!(input as TakeInput);
-
-    let TakeInput {
-        interrupt_path,
-        priority,
-    } = input;
-
-    let interrupt_export_name = if let Some(last_seg) = interrupt_path.path.segments.last() {
-        last_seg.ident.to_string()
-    } else {
-        abort!(interrupt_path, "Could not find last segment of type path.");
-    };
-
-    match interrupt_export_name.as_str() {
+fn is_exception(name: &str) -> bool {
+    match name {
         "HardFault" | "NonMaskableInt" | "MemoryManagement" | "BusFault" | "UsageFault"
-        | "SecureFault" | "SVCall" | "DebugMonitor" | "PendSV" | "SysTick" => {
-            abort!(
-                interrupt_path,
-                "`{}` is not an NVIC-servicable interrupt.",
-                interrupt_export_name
-            )
-        }
-        _ => {}
+        | "SecureFault" | "SVCall" | "DebugMonitor" | "PendSV" | "SysTick" => true,
+        _ => false,
     }
-
-    let interrupt_export_name = Lit::new(Literal::string(&interrupt_export_name));
-
-    let set_priority = if use_logical_prio {
-        quote! {
-            let prio_bits = ::cortex_m_interrupt::determine_prio_bits(&mut nvic, #interrupt_path.number());
-            let priority = ::cortex_m_interrupt::logical2hw(self.priority, prio_bits);
-            nvic.set_priority(#interrupt_path, priority);
-        }
-    } else {
-        quote! {
-            nvic.set_priority(#interrupt_path, self.priority);
-        }
-    };
-
-    quote! {
-        {
-            static mut HANDLER: core::mem::MaybeUninit<fn()> = core::mem::MaybeUninit::uninit();
-
-            const _ASSERT_NVIC_IRQ: () = ::cortex_m_interrupt::assert_is_nvic_interrupt(#interrupt_path);
-
-            #[export_name = #interrupt_export_name]
-            pub unsafe extern "C" fn isr() {
-                (HANDLER.assume_init())();
-            }
-
-            pub struct Handle {
-                priority: u8,
-            }
-
-            impl ::cortex_m_interrupt::IrqHandle for Handle {
-                fn register(self, f: fn()) {
-                    use  ::cortex_m_interrupt::cortex_m::interrupt::InterruptNumber;
-
-                    ::cortex_m_interrupt::cortex_m::peripheral::NVIC::mask(#interrupt_path);
-
-                    unsafe {
-                        HANDLER.write(f);
-                    }
-
-                    core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::Release);
-
-                    ::cortex_m_interrupt::cortex_m::interrupt::free(|_| {
-                        unsafe {
-                            let mut nvic: ::cortex_m_interrupt::cortex_m::peripheral::NVIC = core::mem::transmute(());
-                            #set_priority
-                            ::cortex_m_interrupt::cortex_m::peripheral::NVIC::unmask(#interrupt_path);
-                        }
-                    });
-                }
-            }
-
-            Handle {
-                priority: #priority,
-            }
-        }
-    }.into()
 }
 
 /// Register an `IrqHandle` to the interrupt specified by `interrupt` with logical priority `priority`.
@@ -119,8 +18,11 @@ fn build(input: proc_macro::TokenStream, use_logical_prio: bool) -> proc_macro::
 /// Usage:
 ///
 /// ```rust,no_compile
-/// use cortex_m_interrupt::{take, IrqHandle};
-/// let irq_handle: IrqHandle = take!(interrupt, priority);
+/// use cortex_m_interrupt::take;
+///
+/// // The value returned by `take` will always `impl cortex_m_interrupt::IrqHandle`.
+/// let irq_handle = take!(interrupt, priority);
+///
 ///
 /// // For example:
 /// let handle = cortex_m_interrupt::take!(stm32f1xx_hal::pac::interrupt::EXTI15_10, 7);
@@ -137,7 +39,7 @@ fn build(input: proc_macro::TokenStream, use_logical_prio: bool) -> proc_macro::
 #[proc_macro]
 #[proc_macro_error]
 pub fn take(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    build(input, true)
+    syn::parse_macro_input!(input as Take).build(true)
 }
 
 /// Register an `IrqHandle` to the interrupt specified by `interrupt` with raw priority `priority`.
@@ -145,8 +47,9 @@ pub fn take(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// Usage:
 ///
 /// ```rust,no_compile
-/// use cortex_m_interrupt::{take, IrqHandle};
-/// let irq_handle: IrqHandle = take_raw_prio!(interrupt, priority);
+/// use cortex_m_interrupt::take;
+/// // The value returned by `take_raw_prio` will always `impl cortex_m_interrupt::IrqHandle`.
+/// let irq_handle = take_raw_prio!(interrupt, priority);
 ///
 /// // For example
 /// let handle = cortex_m_interrupt::take_raw_prio!(stm32f1xx_hal::pac::interrupt::EXTI15_10, 254);
@@ -156,5 +59,41 @@ pub fn take(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 #[proc_macro]
 #[proc_macro_error]
 pub fn take_raw_prio(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    build(input, false)
+    syn::parse_macro_input!(input as Take).build(false)
+}
+
+pub(crate) fn handle_generator(
+    interrupt_export_name: LitStr,
+    defs: TokenStream,
+    pre_write: TokenStream,
+    post_write: TokenStream,
+    return_value: TokenStream,
+) -> TokenStream {
+    quote::quote! {
+        {
+            #defs
+
+            static mut HANDLER: core::mem::MaybeUninit<fn()> = core::mem::MaybeUninit::uninit();
+
+            #[export_name = #interrupt_export_name]
+            pub unsafe extern "C" fn isr() {
+                (HANDLER.assume_init())();
+            }
+
+           impl ::cortex_m_interrupt::IrqHandle for Handle {
+                fn register(self, f: fn()) {
+                    #pre_write
+                    unsafe {
+                        HANDLER.write(f);
+                    }
+
+                    core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::Release);
+
+                    #post_write
+                }
+            }
+
+            #return_value
+        }
+    }
 }
