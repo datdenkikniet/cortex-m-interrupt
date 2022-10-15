@@ -25,14 +25,18 @@ pub trait IrqHandle {
 /// priority-level bits available, allowing us to calculate the amount of priority
 /// levels supported by this NVIC.
 ///
-/// After performing this calculation, the priority of the placeholder interrupt is restored.
+/// After performing this calculation, the priority of the placeholder interrupt is **not** restored.
 ///
 /// It is guaranteed that all non-implemented priority bits will be read back as zero for any
 /// NVIC implementation that conforms to the [GIC] (see section 3.5.1), which includes at least all
 /// [armv7m] (see section B1.5.4) and [armv6m] (see section B3.4) cores.
 ///
 /// # Safety
-/// This function should only be called from a critical section.
+/// This function should only be called from a critical section, as it alters the priority
+/// of an interrupt.
+///
+/// The caller must restore the priority of `placeholder_interrupt` to a known-and-valid priority after
+/// calling this function, as [`determine_prio_bits`] does not restore the overwritten priority.
 ///
 /// [GIC]: https://documentation-service.arm.com/static/5f8ff196f86e16515cdbf969
 /// [armv7m]: https://documentation-service.arm.com/static/606dc36485368c4c2b1bf62f
@@ -48,11 +52,8 @@ pub unsafe fn determine_prio_bits(nvic: &mut NVIC, placeholder_interrupt: u16) -
 
     let interrupt = RawInterrupt(placeholder_interrupt);
 
-    let current_prio = NVIC::get_priority(interrupt);
-
     nvic.set_priority(interrupt, 0xFF);
     let written_prio = NVIC::get_priority(interrupt);
-    nvic.set_priority(interrupt, current_prio);
 
     let prio_bits = written_prio.leading_ones();
 
