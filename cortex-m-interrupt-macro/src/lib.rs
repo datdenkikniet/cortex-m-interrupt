@@ -30,7 +30,7 @@ impl Parse for TakeInput {
     }
 }
 
-fn build(input: proc_macro::TokenStream, use_rtic_prio: bool) -> proc_macro::TokenStream {
+fn build(input: proc_macro::TokenStream, use_logical_prio: bool) -> proc_macro::TokenStream {
     let input = syn::parse_macro_input!(input as TakeInput);
 
     let TakeInput {
@@ -46,7 +46,7 @@ fn build(input: proc_macro::TokenStream, use_rtic_prio: bool) -> proc_macro::Tok
 
     let interrupt_export_name = Lit::new(Literal::string(&interrupt_export_name));
 
-    let set_priority = if use_rtic_prio {
+    let set_priority = if use_logical_prio {
         quote! {
             let prio_bits = ::cortex_m_interrupt::determine_prio_bits(&mut nvic, #interrupt_path.number());
             let priority = ::cortex_m_interrupt::logical2hw(self.priority, prio_bits);
@@ -100,9 +100,9 @@ fn build(input: proc_macro::TokenStream, use_rtic_prio: bool) -> proc_macro::Tok
     }.into()
 }
 
-/// Register an `IrqHandle` to the interrupt specified by `interrupt` with RTIC priority `priority`.
+/// Register an `IrqHandle` to the interrupt specified by `interrupt` with logical priority `priority`.
 ///
-/// Usage:
+/// /// Usage:
 ///
 /// ```rust,no_compile
 /// use cortex_m_interrupt::{take, IrqHandle};
@@ -112,9 +112,14 @@ fn build(input: proc_macro::TokenStream, use_rtic_prio: bool) -> proc_macro::Tok
 /// let handle = cortex_m_interrupt::take!(stm32f1xx_hal::pac::interrupt::EXTI15_10, 7);
 /// ```
 ///
-/// Important to note is that the `priority` is interpreted as RTIC priority, where
-/// a higher priority indicates a higher priority level. If you wish to configure your
-/// interrupt with a raw priority, see [`take_raw_prio!`].
+/// A logical priority with a lower value has a lower priority level. This means that the logical priority
+/// 0 has the lowest priority level, while logical priority `2^N` (where `N = available priority bits on platform`)
+/// has the highest priority.
+///
+/// The macro calculates the amount of priority bits available on the platform at runtime.
+///
+/// If you wish to use a raw priority value, and/or want to avoid the runtiem calculation of the amount
+/// of available priority bits, the `take_raw_prio` proc-macro can be used instead.
 #[proc_macro]
 #[proc_macro_error]
 pub fn take(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
