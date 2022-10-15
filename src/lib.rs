@@ -31,8 +31,7 @@ pub trait IrqHandle {
 /// priority.
 ///
 /// The count of leading ones in the resulting value indicates the amount of
-/// priority-level bits available, allowing us to calculate the amount of priority
-/// levels supported by this NVIC.
+/// priority-level bits available.
 ///
 /// After performing this calculation, the priority of the placeholder interrupt is **not** restored.
 ///
@@ -66,11 +65,11 @@ pub unsafe fn determine_prio_bits(nvic: &mut NVIC, placeholder_interrupt: u16) -
 
     let prio_bits = written_prio.leading_ones();
 
-    written_prio >> (8 - prio_bits)
+    prio_bits as u8
 }
 
-/// Convert a logical priority (where higher priority = higher priority level) to
-/// a hardware priority level (where lower priority = higher priority level).
+/// Convert a logical priority (where higher priority number = higher priority level) to
+/// a hardware priority level (where lower priority number = higher priority level).
 ///
 /// Taken from [`cortex_m_rtic`]
 ///
