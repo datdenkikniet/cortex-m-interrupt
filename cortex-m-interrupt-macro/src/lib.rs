@@ -44,6 +44,18 @@ fn build(input: proc_macro::TokenStream, use_logical_prio: bool) -> proc_macro::
         abort!(interrupt_path, "Could not find last segment of type path.");
     };
 
+    match interrupt_export_name.as_str() {
+        "HardFault" | "NonMaskableInt" | "MemoryManagement" | "BusFault" | "UsageFault"
+        | "SecureFault" | "SVCall" | "DebugMonitor" | "PendSV" | "SysTick" => {
+            abort!(
+                interrupt_path,
+                "`{}` is not an NVIC-servicable interrupt.",
+                interrupt_export_name
+            )
+        }
+        _ => {}
+    }
+
     let interrupt_export_name = Lit::new(Literal::string(&interrupt_export_name));
 
     let set_priority = if use_logical_prio {
