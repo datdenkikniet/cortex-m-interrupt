@@ -1,17 +1,27 @@
 use proc_macro2::Literal;
+use proc_macro_error::{abort, proc_macro_error};
 use quote::quote;
-use syn::{parse::Parse, token::Comma, Expr, Lit, Path};
+use syn::{parse::Parse, token::Comma, Error, Expr, Lit, TypePath};
 
 struct TakeInput {
-    interrupt_path: Path,
+    interrupt_path: TypePath,
     priority: Expr,
 }
 
 impl Parse for TakeInput {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        let interrupt_ident = input.parse()?;
+        let interrupt_ident = input
+            .parse()
+            .map_err(|e| Error::new(e.span(), "Expected path to interrupt as first argument."))?;
+
         input.parse::<Comma>()?;
-        let priority = input.parse()?;
+
+        let priority = input.parse().map_err(|e| {
+            Error::new(
+                e.span(),
+                "Expected an expression that represents the priority to assign to the interrupt.",
+            )
+        })?;
 
         Ok(Self {
             interrupt_path: interrupt_ident,
@@ -28,9 +38,13 @@ fn build(input: proc_macro::TokenStream, use_rtic_prio: bool) -> proc_macro::Tok
         priority,
     } = input;
 
-    let interrupt_export_name = Lit::new(Literal::string(
-        &interrupt_path.segments.last().unwrap().ident.to_string(),
-    ));
+    let interrupt_export_name = if let Some(last_seg) = interrupt_path.path.segments.last() {
+        last_seg.ident.to_string()
+    } else {
+        abort!(interrupt_path, "Could not find last segment of type path.");
+    };
+
+    let interrupt_export_name = Lit::new(Literal::string(&interrupt_export_name));
 
     let set_priority = if use_rtic_prio {
         quote! {
@@ -102,6 +116,7 @@ fn build(input: proc_macro::TokenStream, use_rtic_prio: bool) -> proc_macro::Tok
 /// a higher priority indicates a higher priority level. If you wish to configure your
 /// interrupt with a raw priority, see [`take_raw_prio!`].
 #[proc_macro]
+#[proc_macro_error]
 pub fn take(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     build(input, true)
 }
@@ -120,6 +135,7 @@ pub fn take(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 ///
 /// The `priority` is not interpreted and written directly to the NVIC priority register.
 #[proc_macro]
+#[proc_macro_error]
 pub fn take_raw_prio(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     build(input, false)
 }
