@@ -39,13 +39,13 @@ impl Take {
         let interrupt_export_name = if let Some(last_seg) = &interrupt_path.path.segments.last() {
             &last_seg.ident
         } else {
-            abort!(interrupt_path, "Could not find last segment of type path.");
+            abort!(interrupt_path, "Could not find last segment of type path");
         };
 
         if super::is_exception(&interrupt_export_name.to_string()) {
             abort!(
                 interrupt_path,
-                "`{}` is an exception, which is not serviced by the NVIC.",
+                "`{}` is an exception, which is not serviced by the NVIC. You may want to use `take_exception` instead",
                 interrupt_export_name
             )
         }

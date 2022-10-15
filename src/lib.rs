@@ -9,7 +9,7 @@ use core::task::Waker;
 mod ssq;
 use ssq::{Consumer, Producer, SingleSlotQueue};
 
-pub use cortex_m_interrupt_macro::{take, take_raw_prio};
+pub use cortex_m_interrupt_macro::{take, take_exception, take_raw_prio};
 
 pub type WakerQueue = SingleSlotQueue<Waker>;
 pub type WakerProducer<'a> = Producer<'a, Waker>;

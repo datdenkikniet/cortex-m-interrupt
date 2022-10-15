@@ -5,6 +5,9 @@ mod take;
 use syn::LitStr;
 use take::Take;
 
+mod take_exception;
+use take_exception::TakeException;
+
 fn is_exception(name: &str) -> bool {
     match name {
         "HardFault" | "NonMaskableInt" | "MemoryManagement" | "BusFault" | "UsageFault"
@@ -60,6 +63,22 @@ pub fn take(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 #[proc_macro_error]
 pub fn take_raw_prio(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     syn::parse_macro_input!(input as Take).build(false)
+}
+
+/// Register an `IrqHandle` to the exception specified by `exception`.
+///
+/// Usage:
+/// ```rust,no_compile
+/// use cortex_m_interrupt::take_exception;
+/// let exception_handle = take_exception!(cortex_m_interrupt::Exception::SysTick);
+///
+/// // For example
+/// let handle = cortex_m_interrupt::take_exception!(cortex_m::peripheral::scb::Exception::SysTick);
+/// ```
+#[proc_macro]
+#[proc_macro_error]
+pub fn take_exception(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    syn::parse_macro_input!(input as TakeException).build()
 }
 
 pub(crate) fn handle_generator(
