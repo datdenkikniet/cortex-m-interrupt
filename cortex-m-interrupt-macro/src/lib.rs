@@ -5,7 +5,6 @@ use syn::{parse::Parse, token::Comma, Expr, Lit, Path};
 struct TakeInput {
     interrupt_path: Path,
     priority: Expr,
-    irq_handle_path: Option<Path>,
 }
 
 impl Parse for TakeInput {
@@ -14,16 +13,9 @@ impl Parse for TakeInput {
         input.parse::<Comma>()?;
         let priority = input.parse()?;
 
-        let irq_handle_path = input
-            .parse::<Option<Comma>>()
-            .map(|_| input.parse().ok())
-            .ok()
-            .flatten();
-
         Ok(Self {
             interrupt_path: interrupt_ident,
             priority,
-            irq_handle_path,
         })
     }
 }
@@ -34,27 +26,16 @@ fn build(input: proc_macro::TokenStream, use_rtic_prio: bool) -> proc_macro::Tok
     let TakeInput {
         interrupt_path,
         priority,
-        irq_handle_path: cortex_m_interrupt_path,
     } = input;
 
     let interrupt_export_name = Lit::new(Literal::string(
         &interrupt_path.segments.last().unwrap().ident.to_string(),
     ));
 
-    let cortex_m_int_path = if let Some(cortex_m_int_path) = cortex_m_interrupt_path {
-        quote! {
-            #cortex_m_int_path
-        }
-    } else {
-        quote! {
-            cortex_m_interrupt
-        }
-    };
-
     let set_priority = if use_rtic_prio {
         quote! {
-            let prio_bits = #cortex_m_int_path::determine_prio_bits(&mut nvic, #interrupt_path.number());
-            let priority = #cortex_m_int_path::logical2hw(self.priority, prio_bits);
+            let prio_bits = ::cortex_m_interrupt::determine_prio_bits(&mut nvic, #interrupt_path.number());
+            let priority = ::cortex_m_interrupt::logical2hw(self.priority, prio_bits);
             nvic.set_priority(#interrupt_path, priority);
         }
     } else {
@@ -76,11 +57,11 @@ fn build(input: proc_macro::TokenStream, use_rtic_prio: bool) -> proc_macro::Tok
                 priority: u8,
             }
 
-            impl #cortex_m_int_path::IrqHandle for Handle {
+            impl ::cortex_m_interrupt::IrqHandle for Handle {
                 fn register(self, f: fn()) {
-                    use  #cortex_m_int_path::cortex_m::interrupt::InterruptNumber;
+                    use  ::cortex_m_interrupt::cortex_m::interrupt::InterruptNumber;
 
-                    #cortex_m_int_path::cortex_m::peripheral::NVIC::mask(#interrupt_path);
+                    ::cortex_m_interrupt::cortex_m::peripheral::NVIC::mask(#interrupt_path);
 
                     unsafe {
                         HANDLER.write(f);
@@ -88,11 +69,11 @@ fn build(input: proc_macro::TokenStream, use_rtic_prio: bool) -> proc_macro::Tok
 
                     core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::Release);
 
-                    #cortex_m_int_path::cortex_m::interrupt::free(|_| {
+                    ::cortex_m_interrupt::cortex_m::interrupt::free(|_| {
                         unsafe {
-                            let mut nvic: #cortex_m_int_path::cortex_m::peripheral::NVIC = core::mem::transmute(());
+                            let mut nvic: ::cortex_m_interrupt::cortex_m::peripheral::NVIC = core::mem::transmute(());
                             #set_priority
-                            #cortex_m_int_path::cortex_m::peripheral::NVIC::unmask(#interrupt_path);
+                            ::cortex_m_interrupt::cortex_m::peripheral::NVIC::unmask(#interrupt_path);
                         }
                     });
                 }
