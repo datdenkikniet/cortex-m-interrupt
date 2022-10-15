@@ -64,6 +64,8 @@ pub unsafe fn determine_prio_bits(nvic: &mut NVIC, placeholder_interrupt: u16) -
 ///
 /// Taken from [`cortex_m_rtic`]
 ///
+/// See RTIC-LICENSE-MIT.md for the license.
+///
 /// [`cortex_m_rtic`]: https://crates.io/crates/cortex-m-rtic
 #[inline]
 #[must_use]
