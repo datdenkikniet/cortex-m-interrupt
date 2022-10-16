@@ -4,13 +4,13 @@
 pub use cortex_m;
 use cortex_m::{interrupt::InterruptNumber, peripheral::NVIC};
 
-pub use cortex_m_interrupt_macro::{take, take_exception, take_raw_prio};
+pub use cortex_m_interrupt_macro::take;
 
 /// A handle that can be used to register a handler for an interrupt.
 ///
 /// Creating an implementor of [`IrqHandle`] can be done using the [`take`] and
 /// [`take_raw_prio`] macros. [`take`] is only available with the feature `rtic-priority`.
-pub trait IrqHandle {
+pub trait EventHandle {
     /// Register the interrupt handler for this [`IrqHandle`]
     fn register(self, f: fn());
 }
