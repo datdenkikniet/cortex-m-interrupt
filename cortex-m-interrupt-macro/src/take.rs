@@ -1,5 +1,5 @@
 use proc_macro_error::abort;
-use syn::{parse::Parse, spanned::Spanned, token::Comma, Error, LitStr, Path};
+use syn::{parse::Parse, spanned::Spanned, Error, LitStr, Path};
 
 pub(crate) struct Take {
     event_path: Path,
@@ -34,17 +34,17 @@ impl Take {
             {
                 struct Handle;
 
-                static mut HANDLER: core::mem::MaybeUninit<fn()> = core::mem::MaybeUninit::uninit();
+                static mut HANDLER: fn() = || { unsafe { ::cortex_m_interrupt::DefaultHandler_()  } };
 
                 #[export_name = #interrupt_export_name]
                 pub unsafe extern "C" fn isr() {
-                    (HANDLER.assume_init())();
+                    (HANDLER)();
                 }
 
                impl ::cortex_m_interrupt::EventHandle for Handle {
                     fn register(self, f: fn()) {
                         unsafe {
-                            HANDLER.write(f);
+                            HANDLER = f;
                         }
 
                         core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::Release);
