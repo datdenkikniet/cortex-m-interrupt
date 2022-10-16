@@ -4,7 +4,10 @@
 pub use cortex_m;
 pub use cortex_m_rt::DefaultHandler_;
 
-pub use cortex_m_interrupt_macro::{take, take_nvic_interrupt};
+pub use cortex_m_interrupt_macro::take;
+
+#[cfg(feature = "unstable")]
+pub use cortex_m_interrupt_macro::take_nvic_interrupt;
 
 mod nvic;
 pub use nvic::*;
