@@ -7,9 +7,9 @@ pub use cortex_m_interrupt_macro::take;
 
 /// A handle that can be used to register a handler for an interrupt.
 ///
-/// Creating an implementor of [`IrqHandle`] can be done using the [`take`] macro.
+/// Creating an implementor of [`InterruptHandle`] can be done using the [`take`] macro.
 pub trait InterruptHandle {
-    /// Register the interrupt handler for this [`IrqHandle`]
+    /// Register the interrupt handler for this [`InterruptHandle`]
     ///
     /// # Safety
     /// TODO: safety docs
