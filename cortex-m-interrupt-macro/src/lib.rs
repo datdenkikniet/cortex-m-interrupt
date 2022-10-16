@@ -18,8 +18,9 @@ pub fn take(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// [`InterruptNumber`]) is allowed, but `EXTI15_10` by itself, even if imported using `use Interrupt::EXTI15_10`, is not.
 ///
 /// A logical priority with a lower value has a lower priority level. This means that the logical priority
-/// 0 has the lowest priority level, while logical priority `2^N - 1` (where `N = available priority bits on platform`)
-/// has the highest priority. A priority higher than `2^N - 1` is equivalent to the priority `2^N - 1`.
+/// `1` has the lowest priority level, while logical priority `2^N` (where `N = available priority bits on platform`)
+/// has the highest priority. A priority greater than `2^N` is equivalent to the priority `2^N`. A logical priority of
+/// `0` is not allowed.
 ///
 /// The adds code that calculates the amount of priority bits available on the platform at runtime.
 ///

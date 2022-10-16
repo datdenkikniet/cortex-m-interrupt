@@ -1,4 +1,4 @@
-use proc_macro_error::abort;
+use proc_macro_error::{abort, ResultExt};
 use quote::quote;
 use syn::{
     parse::Parse,
@@ -46,6 +46,11 @@ impl TakeNvicInterrupt {
         let interrupt_type: Punctuated<PathSegment, Colon2> =
             interrupt_type.map(|s| s.clone()).collect();
 
+        let prio_value: u32 = priority.base10_parse().unwrap_or_abort();
+        if prio_value == 0 {
+            abort!(priority, "Priority must be 1 or greater.");
+        }
+
         let set_priority = if use_logical_priority {
             quote! {
                 let prio_bits = ::cortex_m_interrupt::determine_prio_bits(&mut nvic, #interrupt_path);
@@ -60,7 +65,7 @@ impl TakeNvicInterrupt {
 
         quote! {{
             struct NvicInterruptHandle {
-                priority: u8,
+                priority: core::num::NonZeroU8,
             }
 
             impl ::cortex_m_interrupt::InterruptHandle for NvicInterruptHandle {
@@ -89,7 +94,8 @@ impl TakeNvicInterrupt {
             }
 
             NvicInterruptHandle {
-                priority: #priority,
+                // Note(unwrap): the macro verifies that `#priority` is not 0.
+                priority: core::num::NonZeroU8::new(#priority).unwrap(),
             }
         }}
         .into()

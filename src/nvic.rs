@@ -49,7 +49,7 @@ pub unsafe fn determine_prio_bits<T: InterruptNumber>(
 /// Convert a logical priority (where higher priority number = higher priority level) to
 /// a hardware priority level (where lower priority number = higher priority level).
 ///
-/// Taken from [`cortex_m_rtic`]
+/// Adapted from from [`cortex_m_rtic`]
 ///
 /// See RTIC-LICENSE-MIT for the license.
 ///
@@ -57,6 +57,6 @@ pub unsafe fn determine_prio_bits<T: InterruptNumber>(
 #[doc_cfg::doc_cfg(feature = "unstable")]
 #[inline]
 #[must_use]
-pub fn logical2hw(logical: u8, nvic_prio_bits: u8) -> u8 {
-    ((1 << nvic_prio_bits) - logical) << (8 - nvic_prio_bits)
+pub fn logical2hw(logical: core::num::NonZeroU8, nvic_prio_bits: u8) -> u8 {
+    ((1 << nvic_prio_bits) - logical.get()) << (8 - nvic_prio_bits)
 }

@@ -1,6 +1,6 @@
-#![no_main]
 #![no_std]
 
+#[cfg(target = "arm")]
 #[panic_handler]
 fn panic_handler(_: &core::panic::PanicInfo) -> ! {
     loop {}
@@ -19,3 +19,5 @@ fn _test() {
         handle_raw_exception.register(|| panic!("In SysTick"));
     }
 }
+
+fn main() {}
