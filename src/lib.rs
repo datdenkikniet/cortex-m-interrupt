@@ -20,5 +20,8 @@ pub type WakerConsumer<'a> = Consumer<'a, Waker>;
 /// [`take_raw_prio`] macros. [`take`] is only available with the feature `rtic-priority`.
 pub trait InterruptHandle {
     /// Register the interrupt handler for this [`IrqHandle`]
-    fn register(self, f: fn());
+    ///
+    /// # Safety
+    /// TODO: safety docs
+    unsafe fn register(self, f: fn());
 }

@@ -30,12 +30,13 @@ impl Take {
                 static mut HANDLER: fn() = || { unsafe { ::cortex_m_interrupt::DefaultHandler_()  } };
 
                 #[export_name = #interrupt_export_name]
+                #[allow(non_snake_case)]
                 pub unsafe extern "C" fn #irq() {
                     (HANDLER)();
                 }
 
                impl ::cortex_m_interrupt::InterruptHandle for Handle {
-                    fn register(self, f: fn()) {
+                    unsafe fn register(self, f: fn()) {
                         unsafe {
                             HANDLER = f;
                         }
