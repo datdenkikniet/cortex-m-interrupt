@@ -1,34 +1,27 @@
-use proc_macro_error::abort;
-use syn::{parse::Parse, spanned::Spanned, Error, LitStr, Path};
+use syn::{parse::Parse, Error, Ident, LitStr};
 
 pub(crate) struct Take {
-    event_path: Path,
+    irq: Ident,
 }
 
 impl Parse for Take {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        let event_path = input.parse().map_err(|e| {
+        let irq = input.parse().map_err(|e| {
             Error::new(
                 e.span(),
                 "Expected path to event (interrupt or exception) as first argument.",
             )
         })?;
 
-        Ok(Self { event_path })
+        Ok(Self { irq })
     }
 }
 
 impl Take {
     pub(crate) fn build(&self) -> proc_macro::TokenStream {
-        let Take { event_path } = self;
+        let Take { irq } = self;
 
-        let event_export_name = if let Some(last_seg) = &event_path.segments.last() {
-            &last_seg.ident
-        } else {
-            abort!(event_path, "Could not find last segment of type path");
-        };
-
-        let interrupt_export_name = LitStr::new(&event_export_name.to_string(), event_path.span());
+        let interrupt_export_name = LitStr::new(&irq.to_string(), irq.span());
 
         quote::quote! {
             {
@@ -37,7 +30,7 @@ impl Take {
                 static mut HANDLER: fn() = || { unsafe { ::cortex_m_interrupt::DefaultHandler_()  } };
 
                 #[export_name = #interrupt_export_name]
-                pub unsafe extern "C" fn isr() {
+                pub unsafe extern "C" fn #irq() {
                     (HANDLER)();
                 }
 
