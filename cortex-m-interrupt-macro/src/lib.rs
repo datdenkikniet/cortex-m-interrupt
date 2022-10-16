@@ -2,22 +2,29 @@ use proc_macro_error::proc_macro_error;
 
 mod take;
 use take::Take;
+use take_nvic_interrupt::TakeNvicInterrupt;
 
-/// Register an `EventHandle` to the interrupt specified by `interrupt`.
-/// 
-/// This works for any enum that implements `InterruptNumber`
+mod take_nvic_interrupt;
+
+#[proc_macro]
+#[proc_macro_error]
+pub fn take(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    syn::parse_macro_input!(input as Take).build()
+}
+
+/// Create an `NvicInterruptHandle` bound to the interrupt specified by `interrupt` with logical priority `priority`.
 ///
 /// Usage:
 ///
 /// ```rust,no_compile
 /// use cortex_m_interrupt::take;
 ///
-/// // The value returned by `take` will always `impl cortex_m_interrupt::IrqHandle`.
-/// let irq_handle = take!(interrupt, priority);
+/// // The value returned by `take_nvic_interrupt` will always `impl cortex_m_interrupt::NvicInterruptHandle`.
+/// let irq_handle = take_nvic_interrupt!(interrupt, priority);
 ///
 ///
 /// // For example:
-/// let handle = cortex_m_interrupt::take!(stm32f1xx_hal::pac::interrupt::EXTI15_10, 7);
+/// let handle = cortex_m_interrupt::take_nvic_interrupt!(stm32f1xx_hal::pac::interrupt::EXTI15_10, 7);
 /// ```
 ///
 /// A logical priority with a lower value has a lower priority level. This means that the logical priority
@@ -25,11 +32,8 @@ use take::Take;
 /// has the highest priority.
 ///
 /// The macro calculates the amount of priority bits available on the platform at runtime.
-///
-/// If you wish to use a raw priority value, and/or want to avoid the runtiem calculation of the amount
-/// of available priority bits, the `take_raw_prio` proc-macro can be used instead.
 #[proc_macro]
 #[proc_macro_error]
-pub fn take(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    syn::parse_macro_input!(input as Take).build()
+pub fn take_nvic_interrupt(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    syn::parse_macro_input!(input as TakeNvicInterrupt).build(true)
 }
