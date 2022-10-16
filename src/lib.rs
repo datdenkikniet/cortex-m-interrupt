@@ -9,7 +9,7 @@ use core::task::Waker;
 mod ssq;
 use ssq::{Consumer, Producer, SingleSlotQueue};
 
-pub use cortex_m_interrupt_macro::{take, take_exception, take_raw_prio};
+pub use cortex_m_interrupt_macro::take;
 
 pub type WakerQueue = SingleSlotQueue<Waker>;
 pub type WakerProducer<'a> = Producer<'a, Waker>;
@@ -19,7 +19,7 @@ pub type WakerConsumer<'a> = Consumer<'a, Waker>;
 ///
 /// Creating an implementor of [`IrqHandle`] can be done using the [`take`] and
 /// [`take_raw_prio`] macros. [`take`] is only available with the feature `rtic-priority`.
-pub trait IrqHandle {
+pub trait EventHandle {
     /// Register the interrupt handler for this [`IrqHandle`]
     fn register(self, f: fn());
 }
