@@ -34,7 +34,7 @@ impl Take {
                     (HANDLER)();
                 }
 
-               impl ::cortex_m_interrupt::EventHandle for Handle {
+               impl ::cortex_m_interrupt::InterruptHandle for Handle {
                     fn register(self, f: fn()) {
                         unsafe {
                             HANDLER = f;

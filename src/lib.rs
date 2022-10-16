@@ -18,7 +18,7 @@ pub type WakerConsumer<'a> = Consumer<'a, Waker>;
 ///
 /// Creating an implementor of [`IrqHandle`] can be done using the [`take`] and
 /// [`take_raw_prio`] macros. [`take`] is only available with the feature `rtic-priority`.
-pub trait EventHandle {
+pub trait InterruptHandle {
     /// Register the interrupt handler for this [`IrqHandle`]
     fn register(self, f: fn());
 }
