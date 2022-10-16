@@ -19,8 +19,8 @@ pub fn take(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 ///
 /// A logical priority with a lower value has a lower priority level. This means that the logical priority
 /// `1` has the lowest priority level, while logical priority `2^N` (where `N = available priority bits on platform`)
-/// has the highest priority. A priority greater than `2^N` is equivalent to the priority `2^N`. A logical priority of
-/// `0` is not allowed.
+/// has the highest priority level. A logical priority of `0` is not allowed, and a logical priority greater than `2^N` panics
+/// at runtime.
 ///
 /// The adds code that calculates the amount of priority bits available on the platform at runtime.
 ///

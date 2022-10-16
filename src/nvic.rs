@@ -49,6 +49,9 @@ pub unsafe fn determine_prio_bits<T: InterruptNumber>(
 /// Convert a logical priority (where higher priority number = higher priority level) to
 /// a hardware priority level (where lower priority number = higher priority level).
 ///
+/// `None` is returned if the priority `logical` is greater than the amount of priority
+/// levels supported by an NVIC with `nvic_prio_bits`, i.e. `logical > (1 << nvic_prio_bits)`.
+///
 /// Taken from [`cortex_m_rtic`]
 ///
 /// See RTIC-LICENSE-MIT for the license.
@@ -57,8 +60,12 @@ pub unsafe fn determine_prio_bits<T: InterruptNumber>(
 #[doc_cfg::doc_cfg(feature = "unstable")]
 #[inline]
 #[must_use]
-pub fn logical2hw(logical: core::num::NonZeroU8, nvic_prio_bits: u8) -> u8 {
-    ((1u8 << nvic_prio_bits).saturating_sub(logical.get())) << (8u8.saturating_sub(nvic_prio_bits))
+pub fn logical2hw(logical: core::num::NonZeroU8, nvic_prio_bits: u8) -> Option<u8> {
+    if logical.get() <= 1 << nvic_prio_bits {
+        Some(((1u8 << nvic_prio_bits) - logical.get()) << (8 - nvic_prio_bits))
+    } else {
+        None
+    }
 }
 
 #[cfg(test)]
@@ -70,14 +77,12 @@ fn test() {
             // for all "valid" values.
             assert_eq!(
                 logical2hw(core::num::NonZeroU8::new(i).unwrap(), 4),
-                ((1u8 << 4) - i) << (8 - 4)
+                Some(((1u8 << 4) - i) << (8 - 4))
             );
         } else {
-            // Verify that the priority saturates at the highest level
-            assert_eq!(
-                logical2hw(core::num::NonZeroU8::new(i).unwrap(), 4),
-                ((1u8 << 4) - 16) << (8 - 4)
-            );
+            // Verify that no priority is returned if it is outside of the
+            // priority range
+            assert_eq!(logical2hw(core::num::NonZeroU8::new(i).unwrap(), 4), None);
         }
     }
 }
