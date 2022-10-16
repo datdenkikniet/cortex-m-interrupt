@@ -9,7 +9,10 @@ use core::task::Waker;
 mod ssq;
 use ssq::{Consumer, Producer, SingleSlotQueue};
 
-pub use cortex_m_interrupt_macro::{take, take_nvic_interrupt};
+pub use cortex_m_interrupt_macro::take;
+
+#[cfg(feature = "unstable")]
+pub use cortex_m_interrupt_macro::take_nvic_interrupt;
 
 mod nvic;
 pub use nvic::*;
