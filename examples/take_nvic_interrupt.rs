@@ -1,6 +1,6 @@
-#![no_main]
 #![no_std]
 
+#[cfg(target = "arm")]
 #[panic_handler]
 fn panic_handler(_: &core::panic::PanicInfo) -> ! {
     loop {}
@@ -16,3 +16,5 @@ fn _test() {
         handle.register(|| panic!("In NVIC interrupt"));
     }
 }
+
+fn main() {}
