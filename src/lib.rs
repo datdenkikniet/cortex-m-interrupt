@@ -2,17 +2,32 @@
 
 // Re-export this path
 pub use cortex_m;
-use cortex_m::{interrupt::InterruptNumber, peripheral::NVIC};
+pub use cortex_m::{interrupt::InterruptNumber, peripheral::NVIC};
 
 pub use cortex_m_interrupt_macro::{take, take_exception, take_raw_prio};
+
+/// A handle that can be used to register a handler for some asynchronously
+/// occuring event.
+pub trait EventHandle {
+    /// Register the interrupt handler for this [`IrqHandle`]
+    fn register(self, f: fn());
+}
+
+/// A handle that can be used to register a handler for an exception
+pub trait ExceptionHandle: EventHandle {
+    const EXCEPTION_NUMBER: i8;
+}
 
 /// A handle that can be used to register a handler for an interrupt.
 ///
 /// Creating an implementor of [`IrqHandle`] can be done using the [`take`] and
 /// [`take_raw_prio`] macros. [`take`] is only available with the feature `rtic-priority`.
-pub trait IrqHandle {
-    /// Register the interrupt handler for this [`IrqHandle`]
-    fn register(self, f: fn());
+pub trait IrqHandle: EventHandle {
+    type Number: InterruptNumber;
+
+    // TODO: this signature should become `const` as
+    // soon as possible.
+    fn interrupt(&self) -> Self::Number;
 }
 
 /// Determine the amount of priority bits available on the current MCU.

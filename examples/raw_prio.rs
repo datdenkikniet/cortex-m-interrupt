@@ -6,7 +6,7 @@ fn panic_handler(_: &core::panic::PanicInfo) -> ! {
     loop {}
 }
 
-use cortex_m_interrupt::IrqHandle;
+use cortex_m_interrupt::EventHandle;
 
 fn _test() {
     let handle_raw =

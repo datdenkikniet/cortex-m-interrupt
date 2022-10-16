@@ -1,8 +1,8 @@
 use proc_macro2::TokenStream;
-use proc_macro_error::proc_macro_error;
+use proc_macro_error::{abort, proc_macro_error};
 
 mod take;
-use syn::LitStr;
+use syn::{punctuated::Punctuated, token::Colon2, LitStr, Path, PathSegment};
 use take::Take;
 
 mod take_exception;
@@ -79,40 +79,4 @@ pub fn take_raw_prio(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
 #[proc_macro_error]
 pub fn take_exception(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     syn::parse_macro_input!(input as TakeException).build()
-}
-
-pub(crate) fn handle_generator(
-    interrupt_export_name: LitStr,
-    defs: TokenStream,
-    pre_write: TokenStream,
-    post_write: TokenStream,
-    return_value: TokenStream,
-) -> TokenStream {
-    quote::quote! {
-        {
-            #defs
-
-            static mut HANDLER: core::mem::MaybeUninit<fn()> = core::mem::MaybeUninit::uninit();
-
-            #[export_name = #interrupt_export_name]
-            pub unsafe extern "C" fn isr() {
-                (HANDLER.assume_init())();
-            }
-
-           impl ::cortex_m_interrupt::IrqHandle for Handle {
-                fn register(self, f: fn()) {
-                    #pre_write
-                    unsafe {
-                        HANDLER.write(f);
-                    }
-
-                    core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::Release);
-
-                    #post_write
-                }
-            }
-
-            #return_value
-        }
-    }
 }

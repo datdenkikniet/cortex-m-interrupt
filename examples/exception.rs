@@ -9,6 +9,7 @@ fn panic_handler(_: &core::panic::PanicInfo) -> ! {
 use cortex_m_interrupt::IrqHandle;
 
 fn _test() {
+    cortex_m::peripheral::scb::Exception::SysTick;
     let handle_raw =
         cortex_m_interrupt::take_exception!(cortex_m::peripheral::scb::Exception::SysTick);
 
