@@ -53,9 +53,14 @@ impl TakeNvicInterrupt {
 
         let set_priority = if use_logical_priority {
             quote! {
-                let prio_bits = ::cortex_m_interrupt::determine_prio_bits(&mut nvic, #interrupt_path);
-                let priority = ::cortex_m_interrupt::logical2hw(self.priority, prio_bits);
-                nvic.set_priority(#interrupt_path, priority);
+                 let prio_bits = ::cortex_m_interrupt::determine_prio_bits(&mut nvic, #interrupt_path);
+                 let priority = ::cortex_m_interrupt::logical2hw(self.priority, prio_bits);
+
+                 if let Some(priority) = priority {
+                    nvic.set_priority(#interrupt_path, priority);
+                 } else {
+                    panic!("Priority level {} is not supported on this platform. (The highest supported level is {}).", self.priority, (1 << prio_bits));
+                 }
             }
         } else {
             quote! {
