@@ -33,6 +33,7 @@ pub trait NvicInterruptHandle: InterruptHandle {
 /// [GIC]: https://documentation-service.arm.com/static/5f8ff196f86e16515cdbf969
 /// [armv7m]: https://documentation-service.arm.com/static/606dc36485368c4c2b1bf62f
 /// [armv6m]: https://documentation-service.arm.com/static/5f8ff05ef86e16515cdbf826
+#[doc_cfg::doc_cfg(feature = "unstable")]
 pub unsafe fn determine_prio_bits<T: InterruptNumber>(
     nvic: &mut NVIC,
     placeholder_interrupt: T,
@@ -53,6 +54,7 @@ pub unsafe fn determine_prio_bits<T: InterruptNumber>(
 /// See RTIC-LICENSE-MIT for the license.
 ///
 /// [`cortex_m_rtic`]: https://crates.io/crates/cortex-m-rtic
+#[doc_cfg::doc_cfg(feature = "unstable")]
 #[inline]
 #[must_use]
 pub fn logical2hw(logical: u8, nvic_prio_bits: u8) -> u8 {
