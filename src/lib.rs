@@ -11,5 +11,8 @@ pub use cortex_m_interrupt_macro::take;
 /// [`take_raw_prio`] macros. [`take`] is only available with the feature `rtic-priority`.
 pub trait InterruptHandle {
     /// Register the interrupt handler for this [`IrqHandle`]
-    fn register(self, f: fn());
+    ///
+    /// # Safety
+    /// TODO: safety docs
+    unsafe fn register(self, f: fn());
 }
