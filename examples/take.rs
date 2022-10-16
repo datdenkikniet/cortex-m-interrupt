@@ -9,9 +9,8 @@ fn panic_handler(_: &core::panic::PanicInfo) -> ! {
 use cortex_m_interrupt::EventHandle;
 
 fn _test() {
-    let handle_raw = cortex_m_interrupt::take!(stm32f1xx_hal::pac::interrupt::EXTI9_5);
-    let handle_raw_exception =
-        cortex_m_interrupt::take!(cortex_m::peripheral::scb::Exception::SysTick);
+    let handle_raw = cortex_m_interrupt::take!(EXTI9_5);
+    let handle_raw_exception = cortex_m_interrupt::take!(SysTick);
 
     handle_raw.register(|| panic!("Oo, raw priorities!"));
     handle_raw_exception.register(|| panic!("In SysTick"));

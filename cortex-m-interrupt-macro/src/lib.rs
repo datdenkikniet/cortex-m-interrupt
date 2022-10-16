@@ -3,7 +3,9 @@ use proc_macro_error::proc_macro_error;
 mod take;
 use take::Take;
 
-/// Register an `IrqHandle` to the interrupt specified by `interrupt` with logical priority `priority`.
+/// Register an `EventHandle` to the interrupt specified by `interrupt`.
+/// 
+/// This works for any enum that implements `InterruptNumber`
 ///
 /// Usage:
 ///
