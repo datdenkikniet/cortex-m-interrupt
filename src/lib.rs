@@ -16,8 +16,7 @@ pub type WakerConsumer<'a> = Consumer<'a, Waker>;
 
 /// A handle that can be used to register a handler for an interrupt.
 ///
-/// Creating an implementor of [`IrqHandle`] can be done using the [`take`] and
-/// [`take_raw_prio`] macros. [`take`] is only available with the feature `rtic-priority`.
+/// Creating an implementor of [`IrqHandle`] can be done using the [`take`] macro.
 pub trait InterruptHandle {
     /// Register the interrupt handler for this [`IrqHandle`]
     ///
