@@ -1,5 +1,5 @@
 #![cfg_attr(feature = "unstable-doc-cfg", feature(doc_cfg))]
-#![cfg_attr(target = "arm", no_std)]
+#![no_std]
 
 // Re-exports
 pub use cortex_m;
