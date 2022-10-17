@@ -2,6 +2,10 @@ use cortex_m::{interrupt::InterruptNumber, peripheral::NVIC};
 
 use crate::InterruptHandle;
 
+/// An interrupt handle bound to an [`NVIC`] interrupt.
+///
+/// The proc-macro [`crate::take_nvic_interrupt`] can be used to create
+/// an implementor of this trait.
 pub trait NvicInterruptHandle: InterruptHandle {
     type InterruptNumber: InterruptNumber;
 
