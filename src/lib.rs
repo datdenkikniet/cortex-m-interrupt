@@ -5,14 +5,6 @@
 pub use cortex_m;
 pub use cortex_m_rt::DefaultHandler_;
 
-/// Create an [`InterruptHandle`] bound to the interrupt named by `interrupt`.
-///
-/// Usage:
-/// ```rust,no_compile
-/// let handle = cortex_m_interrupt::take!(EXTI15_10);
-/// ```
-pub use cortex_m_interrupt_macro::take;
-
 /// Create an [`NvicInterruptHandle`] bound to the interrupt specified by `interrupt` with logical priority `priority`.
 ///
 /// `interrupt` must be specified with _at least_ 2 path segments. For instance, `Interrupt::EXTI15_10` (where `Interrupt` implements
@@ -40,17 +32,14 @@ pub use cortex_m_interrupt_macro::take;
 /// ```
 ///
 /// [`InterruptNumber`]: cortex_m::interrupt::InterruptNumber
-#[doc_cfg::doc_cfg(feature = "unstable")]
 pub use cortex_m_interrupt_macro::take_nvic_interrupt;
 
-#[cfg(feature = "unstable")]
 mod nvic;
-#[cfg(feature = "unstable")]
 pub use nvic::*;
 
 /// A handle that can be used to register a handler for an interrupt.
 ///
-/// Creating an implementor of [`InterruptHandle`] can be done using the [`take`] macro.
+/// Creating an implementor of [`InterruptHandle`] can be done using the [`take_nvic_interrupt`] macro.
 pub trait InterruptHandle {
     /// Register the interrupt handler for this [`InterruptHandle`]
     fn register(self, f: fn());

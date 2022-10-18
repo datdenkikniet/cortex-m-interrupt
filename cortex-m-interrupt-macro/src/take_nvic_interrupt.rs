@@ -68,6 +68,8 @@ impl TakeNvicInterrupt {
             }
         };
 
+        let take_interrupt = crate::Take::new(interrupt_ident.ident.clone()).build();
+
         quote! {{
             struct NvicInterruptHandle {
                 priority: core::num::NonZeroU8,
@@ -79,7 +81,7 @@ impl TakeNvicInterrupt {
                     use ::cortex_m_interrupt::InterruptHandle;
 
                     cortex_m::interrupt::free(|_| unsafe {
-                        let int_handle = ::cortex_m_interrupt::take!(#interrupt_ident);
+                        let int_handle = #take_interrupt;
 
                         ::cortex_m_interrupt::cortex_m::peripheral::NVIC::mask(#interrupt_path);
 

@@ -7,7 +7,6 @@ edition = "2021"
 features = ["unstable-doc-cfg"]
 
 [features]
-unstable = [ ]
 unstable-doc-cfg = [ ]
 std = [ ]
 

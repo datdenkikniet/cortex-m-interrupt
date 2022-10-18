@@ -1,6 +1,6 @@
 use syn::{parse::Parse, Error, Ident, LitStr};
 
-pub(crate) struct Take {
+pub struct Take {
     irq: Ident,
 }
 
@@ -18,7 +18,11 @@ impl Parse for Take {
 }
 
 impl Take {
-    pub(crate) fn build(&self) -> proc_macro::TokenStream {
+    pub fn new(irq: Ident) -> Self {
+        Self { irq }
+    }
+
+    pub fn build(&self) -> proc_macro2::TokenStream {
         let Take { irq } = self;
 
         let interrupt_export_name = LitStr::new(&irq.to_string(), irq.span());
@@ -49,6 +53,5 @@ impl Take {
                 Handle
             }
         }
-        .into()
     }
 }
