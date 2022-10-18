@@ -37,7 +37,7 @@ impl Take {
 
                impl ::cortex_m_interrupt::InterruptHandle for Handle {
                     #[inline(always)]
-                    unsafe fn register(self, f: fn()) {
+                    fn register(self, f: fn()) {
                         unsafe {
                             HANDLER = f;
                         }

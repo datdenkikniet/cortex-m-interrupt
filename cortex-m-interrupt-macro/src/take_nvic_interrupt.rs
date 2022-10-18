@@ -59,7 +59,7 @@ impl TakeNvicInterrupt {
                  if let Some(priority) = priority {
                     nvic.set_priority(#interrupt_path, priority);
                  } else {
-                    panic!("Priority level {} is not supported on this platform. (The highest supported level is {}).", self.priority, (1 << prio_bits));
+                    panic!(stringify!(Unsupported priority level #priority was used for interrupt #interrupt_path));
                  }
             }
         } else {
@@ -75,18 +75,21 @@ impl TakeNvicInterrupt {
 
             impl ::cortex_m_interrupt::InterruptHandle for NvicInterruptHandle {
                 #[inline(always)]
-                unsafe fn register(self, f: fn()) {
+                fn register(self, f: fn()) {
                     use ::cortex_m_interrupt::InterruptHandle;
 
-                    let int_handle = ::cortex_m_interrupt::take!(#interrupt_ident);
+                    cortex_m::interrupt::free(|_| unsafe {
+                        let int_handle = ::cortex_m_interrupt::take!(#interrupt_ident);
 
-                    ::cortex_m_interrupt::cortex_m::peripheral::NVIC::mask(#interrupt_path);
+                        ::cortex_m_interrupt::cortex_m::peripheral::NVIC::mask(#interrupt_path);
 
-                    int_handle.register(f);
+                        int_handle.register(f);
 
-                    let mut nvic: ::cortex_m_interrupt::cortex_m::peripheral::NVIC = core::mem::transmute(());
-                    #set_priority
-                    ::cortex_m_interrupt::cortex_m::peripheral::NVIC::unmask(#interrupt_path);
+                        let mut nvic: ::cortex_m_interrupt::cortex_m::peripheral::NVIC = unsafe { core::mem::transmute(()) };
+                        #set_priority
+                        ::cortex_m_interrupt::cortex_m::peripheral::NVIC::unmask(#interrupt_path);
+                    })
+
                 }
             }
 

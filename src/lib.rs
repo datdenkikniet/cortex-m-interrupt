@@ -1,15 +1,15 @@
 #![cfg_attr(feature = "unstable-doc-cfg", feature(doc_cfg))]
-#![cfg_attr(target = "arm", no_std)]
+#![cfg_attr(not(feature = "std"), no_std)]
 
 // Re-exports
 pub use cortex_m;
 pub use cortex_m_rt::DefaultHandler_;
 
-/// Create an [`InterruptHandle`] bound to the interrupt named by `interrupt.
+/// Create an [`InterruptHandle`] bound to the interrupt named by `interrupt`.
 ///
 /// Usage:
 /// ```rust,no_compile
-/// let handle = cortex_m_interrupt::take!("EXTI15_10");
+/// let handle = cortex_m_interrupt::take!(EXTI15_10);
 /// ```
 pub use cortex_m_interrupt_macro::take;
 
@@ -53,8 +53,5 @@ pub use nvic::*;
 /// Creating an implementor of [`InterruptHandle`] can be done using the [`take`] macro.
 pub trait InterruptHandle {
     /// Register the interrupt handler for this [`InterruptHandle`]
-    ///
-    /// # Safety
-    /// TODO: safety docs
-    unsafe fn register(self, f: fn());
+    fn register(self, f: fn());
 }

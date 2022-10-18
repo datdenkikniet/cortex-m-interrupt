@@ -9,6 +9,7 @@ features = ["unstable-doc-cfg"]
 [features]
 unstable = [ ]
 unstable-doc-cfg = [ ]
+std = [ ]
 
 [dependencies]
 cortex-m-interrupt-macro = { path = "./cortex-m-interrupt-macro" }
