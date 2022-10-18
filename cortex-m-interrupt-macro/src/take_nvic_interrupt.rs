@@ -80,7 +80,7 @@ impl TakeNvicInterrupt {
                 fn register(self, f: fn()) {
                     use ::cortex_m_interrupt::InterruptHandle;
 
-                    cortex_m::interrupt::free(|_| unsafe {
+                    ::cortex_m_interrupt::cortex_m::interrupt::free(|_| unsafe {
                         let int_handle = #take_interrupt;
 
                         ::cortex_m_interrupt::cortex_m::peripheral::NVIC::mask(#interrupt_path);

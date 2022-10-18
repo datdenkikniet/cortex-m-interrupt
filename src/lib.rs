@@ -34,12 +34,18 @@ pub use cortex_m_rt::DefaultHandler_;
 /// [`InterruptNumber`]: cortex_m::interrupt::InterruptNumber
 pub use cortex_m_interrupt_macro::take_nvic_interrupt;
 
+/// TODO: docs
+pub use cortex_m_interrupt_macro::take_exception;
+
+mod exception;
+pub use exception::ExceptionHandle;
+
 mod nvic;
-pub use nvic::*;
+pub use nvic::{determine_prio_bits, logical2hw, NvicInterruptHandle};
 
 /// A handle that can be used to register a handler for an interrupt.
 ///
-/// Creating an implementor of [`InterruptHandle`] can be done using the [`take_nvic_interrupt`] macro.
+/// Creating an implementor of [`InterruptHandle`] can be done using the [`take_nvic_interrupt`] or [`take_exception`] macro.
 pub trait InterruptHandle {
     /// Register the interrupt handler for this [`InterruptHandle`]
     fn register(self, f: fn());
