@@ -4,8 +4,10 @@ use crate::InterruptHandle;
 
 /// An interrupt handle bound to an [`NVIC`] interrupt.
 ///
-/// The proc-macro [`crate::take_nvic_interrupt`] can be used to create
+/// The proc-macro [`take_nvic_interrupt`] should be used to create
 /// an implementor of this trait.
+///
+/// [`take_nvic_interrupt`]: super::take_nvic_interrupt
 pub trait NvicInterruptHandle: InterruptHandle {
     type InterruptNumber: InterruptNumber;
 

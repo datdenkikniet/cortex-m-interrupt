@@ -45,7 +45,8 @@ pub use nvic::{determine_prio_bits, logical2hw, NvicInterruptHandle};
 
 /// A handle that can be used to register a handler for an interrupt.
 ///
-/// Creating an implementor of [`InterruptHandle`] can be done using the [`take_nvic_interrupt`] or [`take_exception`] macro.
+/// Creating an implementor of [`InterruptHandle`] can be done using the
+/// [`take_nvic_interrupt`] or [`take_exception`] macros.
 pub trait InterruptHandle {
     /// Register the interrupt handler for this [`InterruptHandle`]
     fn register(self, f: fn());
