@@ -1,3 +1,4 @@
+#![doc = include_str!("../README.md")]
 #![cfg_attr(feature = "unstable-doc-cfg", feature(doc_cfg))]
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -19,8 +20,8 @@ pub use cortex_m_rt::DefaultHandler_;
 ///
 /// Usage:
 ///
-/// ```rust,no_compile
-/// use cortex_m_interrupt::take;
+/// ```rust,compile_fail
+/// use cortex_m_interrupt::take_nvic_interrupt;
 ///
 /// // The value returned by `take_nvic_interrupt` will
 /// // always `impl cortex_m_interrupt::NvicInterruptHandle`.

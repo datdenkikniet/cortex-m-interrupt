@@ -10,17 +10,19 @@ To help explain the use case of this crate, we use the following definitions:
 
 
 ### An example
-```rust
+```rust,no_run
+# fn systick_reload(_: u32) {}
+# fn setup_systick_exception(_: u32) {}
 static mut COUNTER: u32 = 0;  // This is part of the "occupation": a
                               // variable that is used within the
                               // interrupt handler
 
-pub extern "C" fn SysTick() { // This is the "registration" (can only 
-                              // be provided once in entirety of the 
+pub extern "C" fn SysTick() { // This is the "registration" (can only
+                              // be provided once in entirety of the
                               // program, incl. libraries)
 
     unsafe { COUNTER += 1 };  // This is the "occupation", the
-    systick_reload(1337);     // actual code to be executed 
+    systick_reload(1337);     // actual code to be executed
                               // when handling the SysTick
                               // interrupt.
 
@@ -28,20 +30,23 @@ pub extern "C" fn SysTick() { // This is the "registration" (can only
 }
 
 fn main(){
-    setup_systick_exception();
+    setup_systick_exception(1337);
     loop {}
 }
 ```
 Or, alternatively, using the `cortex_m_rt` crate:
-```rust
+```rust,no_run
+# fn systick_reload(_: u32) {}
+# fn setup_systick_exception(_: u32) {}
+use cortex_m_rt::exception;
 #[exception]
-fn SysTick() { // This is the "registration" (can only 
-               // be provided once in entirety of the 
+fn SysTick() { // This is the "registration" (can only
+               // be provided once in entirety of the
                // program, incl. libraries)
 
     static mut COUNTER: u32 = 0; // This is part of the "occupation"
-    COUNTER += 1;                // This is the "occupation", the
-    systick_reload(1337);        // actual code to be executed 
+    *COUNTER += 1;                // This is the "occupation", the
+    systick_reload(1337);        // actual code to be executed
                                  // when handling the SysTick
                                  // interrupt.
 
@@ -54,7 +59,7 @@ fn main(){
 ```
 
 And within the crate providing `setup_systick_exception` and `systick_reload`:
-```rust
+```rust,no_run
 pub fn setup_systick_exception(reload_value: u32) {
     /* Setup systick so that it triggers the SysTick interrupt
        after `reload_value` cycles
@@ -83,8 +88,9 @@ To alleviate difficulties with creating registrations, the `take_nvic_interrupt`
 
 ### A revised example
 In the user crate:
-```rust
-
+```rust,no_run
+# use cortex_m::peripheral::scb::Exception::SysTick;
+# fn setup_systick_exception<T: cortex_m_interrupt::InterruptHandle>(_: u32, _: T, _: fn()) {}
 static mut COUNTER: u32 = 0; 
 
 fn increase_counter() {
@@ -93,16 +99,18 @@ fn increase_counter() {
 
 fn main() {
     // We create the registration
-    let systick_handle = cortex_m_interrupt::take_exception(SysTick);
+    let systick_handle = cortex_m_interrupt::take_exception!(SysTick);
     // And pass it to some function that will do some configuration and
     // provide a occupation for that registration. It also allows us to
     // inject our own expansion to the occupation.
     setup_systick_exception(1337, systick_handle, increase_counter);
+    loop {}
 }
 ```
 
 In the crate providing `setup_systick_exception`:
 ```rust
+# use cortex_m_interrupt::ExceptionHandle;
 pub fn setup_systick_exception<Handle: ExceptionHandle>(
     reload_value: u32,
     handle: Handle,
@@ -119,11 +127,20 @@ pub fn setup_systick_exception<Handle: ExceptionHandle>(
        after `reload_value` cycles
     */ 
 
+    use core::mem::MaybeUninit;
+    static mut USER_HANDLE: MaybeUninit<fn()> = MaybeUninit::uninit();
+    static mut RELOAD_VALUE: MaybeUninit<u32> = MaybeUninit::uninit();
+
+    unsafe { USER_HANDLE.write(f) };
+    unsafe { RELOAD_VALUE.write(reload_value) };
+
+    core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::Release);
+
     handle.register(|| {
-        systick_reload(reload_value);
+        systick_reload(unsafe { RELOAD_VALUE.assume_init() });
 
         // Call extra user code
-        f();
+        unsafe { (USER_HANDLE.assume_init())(); }
     });
 }
 
