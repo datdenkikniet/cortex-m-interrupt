@@ -20,7 +20,7 @@ pub use cortex_m_rt::DefaultHandler_;
 ///
 /// Usage:
 ///
-/// ```rust,compile_fail
+/// ```rust,ignore
 /// use cortex_m_interrupt::take_nvic_interrupt;
 ///
 /// // The value returned by `take_nvic_interrupt` will
