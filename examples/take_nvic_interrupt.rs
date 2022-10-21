@@ -1,6 +1,6 @@
 #![no_std]
+#![no_main]
 
-#[cfg(not(feature = "std"))]
 #[panic_handler]
 fn panic_handler(_: &core::panic::PanicInfo) -> ! {
     loop {}
@@ -15,4 +15,8 @@ fn _test() {
     handle.register(|| panic!("In NVIC interrupt"));
 }
 
-fn main() {}
+#[cortex_m_rt::entry]
+fn main() -> ! {
+    _test();
+    loop {}
+}
