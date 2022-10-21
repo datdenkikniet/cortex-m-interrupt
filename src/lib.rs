@@ -1,6 +1,6 @@
 #![doc = include_str!("../README.md")]
 #![cfg_attr(feature = "unstable-doc-cfg", feature(doc_cfg))]
-#![cfg_attr(not(feature = "std"), no_std)]
+#![no_std]
 
 // Re-exports
 pub use cortex_m;
