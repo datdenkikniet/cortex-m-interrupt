@@ -95,12 +95,8 @@ impl TakeNvicInterrupt {
                 }
             }
 
-            impl ::cortex_m_interrupt::NvicInterruptHandle for NvicInterruptHandle {
-                type InterruptNumber = #interrupt_type;
-
-                fn number(&self) -> Self::InterruptNumber {
-                    #interrupt_path
-                }
+            impl ::cortex_m_interrupt::NvicInterruptHandle<#interrupt_type> for NvicInterruptHandle {
+                const INTERRUPT_NUMBER: #interrupt_type = #interrupt_path;
             }
 
             NvicInterruptHandle {

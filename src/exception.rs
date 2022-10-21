@@ -6,8 +6,12 @@ use crate::InterruptHandle;
 ///
 /// [`take_exception`]: super::take_exception
 pub trait ExceptionHandle: InterruptHandle {
+    const EXCEPTION: crate::cortex_m::peripheral::scb::Exception;
+
     /// The [`Exception`] that this `ExceptionHandle` registers.
     ///
     /// [`Exception`]: cortex_m::peripheral::scb::Exception
-    fn exception(&self) -> crate::cortex_m::peripheral::scb::Exception;
+    fn exception(&self) -> crate::cortex_m::peripheral::scb::Exception {
+        Self::EXCEPTION
+    }
 }

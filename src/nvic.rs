@@ -8,10 +8,12 @@ use crate::InterruptHandle;
 /// an implementor of this trait.
 ///
 /// [`take_nvic_interrupt`]: super::take_nvic_interrupt
-pub trait NvicInterruptHandle: InterruptHandle {
-    type InterruptNumber: InterruptNumber;
+pub trait NvicInterruptHandle<T: InterruptNumber>: InterruptHandle {
+    const INTERRUPT_NUMBER: T;
 
-    fn number(&self) -> Self::InterruptNumber;
+    fn number(&self) -> T {
+        Self::INTERRUPT_NUMBER
+    }
 }
 
 /// Determine the amount of priority bits available on the current MCU.

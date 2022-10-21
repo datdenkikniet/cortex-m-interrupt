@@ -39,9 +39,7 @@ impl TakeException {
             }
 
             impl ::cortex_m_interrupt::ExceptionHandle for ExceptionHandle {
-                fn exception(&self) -> ::cortex_m_interrupt::cortex_m::peripheral::scb::Exception {
-                    ::cortex_m_interrupt::cortex_m::peripheral::scb::Exception::#exception
-                }
+                const EXCEPTION: ::cortex_m_interrupt::cortex_m::peripheral::scb::Exception = ::cortex_m_interrupt::cortex_m::peripheral::scb::Exception::#exception;
             }
 
             ExceptionHandle {
