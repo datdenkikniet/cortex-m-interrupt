@@ -70,22 +70,23 @@ impl TakeNvicInterrupt {
 
         let take_interrupt = crate::Take::new(interrupt_ident.ident.clone()).build();
 
+        let int_handle = quote! { ::cortex_m_interrupt::InterruptHandle };
+
         quote! {{
-            struct NvicInterruptHandle {
+            struct NvicInterruptHandle<T: #int_handle> {
                 priority: core::num::NonZeroU8,
+                handle: T,
             }
 
-            impl ::cortex_m_interrupt::InterruptHandle for NvicInterruptHandle {
+            impl<T: #int_handle> #int_handle for NvicInterruptHandle<T> {
                 #[inline(always)]
-                fn register(self, f: fn()) {
-                    use ::cortex_m_interrupt::InterruptHandle;
+                fn register(&mut self, f: fn()) {
+                    use #int_handle;
 
                     ::cortex_m_interrupt::cortex_m::interrupt::free(|_| unsafe {
-                        let int_handle = #take_interrupt;
-
                         ::cortex_m_interrupt::cortex_m::peripheral::NVIC::mask(#interrupt_path);
 
-                        int_handle.register(f);
+                        self.handle.register(f);
 
                         let mut nvic: ::cortex_m_interrupt::cortex_m::peripheral::NVIC = unsafe { core::mem::transmute(()) };
                         #set_priority
@@ -93,15 +94,22 @@ impl TakeNvicInterrupt {
                     })
 
                 }
+
+                #[inline(always)]
+                unsafe fn reset(&mut self) {
+                    ::cortex_m_interrupt::cortex_m::peripheral::NVIC::mask(#interrupt_path);
+                    self.handle.reset();
+                }
             }
 
-            impl ::cortex_m_interrupt::NvicInterruptHandle<#interrupt_type> for NvicInterruptHandle {
+            impl<T: #int_handle> ::cortex_m_interrupt::NvicInterruptHandle<#interrupt_type> for NvicInterruptHandle<T> {
                 const INTERRUPT_NUMBER: #interrupt_type = #interrupt_path;
             }
 
             NvicInterruptHandle {
                 // Note(unwrap): the macro verifies that `#priority` is not 0.
                 priority: core::num::NonZeroU8::new(#priority).unwrap(),
+                handle: #take_interrupt,
             }
         }}
         .into()

@@ -31,6 +31,7 @@ impl Take {
             {
                 struct Handle;
 
+                static REGISTERED: core::sync::atomic::AtomicBool = core::sync::atomic::AtomicBool::new(false);
                 static mut HANDLER: fn() = || { unsafe { ::cortex_m_interrupt::DefaultHandler_()  } };
 
                 #[export_name = #interrupt_export_name]
@@ -41,12 +42,25 @@ impl Take {
 
                impl ::cortex_m_interrupt::InterruptHandle for Handle {
                     #[inline(always)]
-                    fn register(self, f: fn()) {
+                    fn register(&mut self, f: fn()) {
+                        if REGISTERED.swap(true, core::sync::atomic::Ordering::Acquire) {
+                            panic!(stringify!(Attempted to reregister interrupt))
+                        }
+
                         unsafe {
                             HANDLER = f;
                         }
 
                         core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::Release);
+                    }
+
+                    #[inline(always)]
+                    unsafe fn reset(&mut self) {
+                        unsafe {
+                            HANDLER = || { unsafe { ::cortex_m_interrupt::DefaultHandler_() } };
+                        }
+
+                        REGISTERED.swap(false, core::sync::atomic::Ordering::SeqCst);
                     }
                 }
 

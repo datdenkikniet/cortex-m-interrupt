@@ -9,7 +9,7 @@ fn panic_handler(_: &core::panic::PanicInfo) -> ! {
 use cortex_m_interrupt::{take_exception, InterruptHandle};
 
 fn _test() {
-    let handle = take_exception!(SysTick);
+    let mut handle = take_exception!(SysTick);
 
     handle.register(|| panic!("In SysTick interrupt"));
 }

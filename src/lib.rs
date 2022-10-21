@@ -50,5 +50,14 @@ pub use nvic::{determine_prio_bits, logical2hw, NvicInterruptHandle};
 /// [`take_nvic_interrupt`] or [`take_exception`] macros.
 pub trait InterruptHandle {
     /// Register the interrupt handler for this [`InterruptHandle`]
-    fn register(self, f: fn());
+    fn register(&mut self, f: fn());
+
+    /// Reset this [`InterruptHandle`].
+    ///
+    /// # Safety
+    /// Callers of this function guarantee that all configuration that is
+    /// controlled by the caller and can cause the interrupt associated with
+    /// this handle to occur to be reset so that it will not cause the interrupt
+    /// to occur.
+    unsafe fn reset(&mut self);
 }

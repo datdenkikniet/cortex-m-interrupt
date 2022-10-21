@@ -26,24 +26,32 @@ impl TakeException {
 
         let exception = &self.exception;
 
+        let int_handle = quote! { ::cortex_m_interrupt::InterruptHandle };
+        let exception_path = quote! { ::cortex_m_interrupt::cortex_m::peripheral::scb::Exception };
+
         quote! {{
-            struct ExceptionHandle {
+            struct ExceptionHandle<T: #int_handle> {
                 exception: ::cortex_m_interrupt::cortex_m::peripheral::scb::Exception,
+                handle: T,
             }
 
-            impl ::cortex_m_interrupt::InterruptHandle for ExceptionHandle {
-                fn register(self, f: fn()) {
-                    let handle = #take;
-                    handle.register(f);
+            impl<T: #int_handle> ::cortex_m_interrupt::InterruptHandle for ExceptionHandle<T> {
+                fn register(&mut self, f: fn()) {
+                    self.handle.register(f);
+                }
+
+                unsafe fn reset(&mut self) {
+                    self.handle.reset();
                 }
             }
 
-            impl ::cortex_m_interrupt::ExceptionHandle for ExceptionHandle {
-                const EXCEPTION: ::cortex_m_interrupt::cortex_m::peripheral::scb::Exception = ::cortex_m_interrupt::cortex_m::peripheral::scb::Exception::#exception;
+            impl<T: #int_handle> ::cortex_m_interrupt::ExceptionHandle for ExceptionHandle<T> {
+                const EXCEPTION: #exception_path = #exception_path::#exception;
             }
 
             ExceptionHandle {
-                exception: ::cortex_m_interrupt::cortex_m::peripheral::scb::Exception::#exception,
+                exception: #exception_path::#exception,
+                handle: #take,
             }
         }}
         .into()
