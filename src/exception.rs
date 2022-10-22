@@ -1,6 +1,6 @@
 use crate::InterruptHandle;
 
-/// A handle that can be used to register a handler for an interrupt caused by an exception.
+/// A handle that can be used to configure the occupation of an interrupt caused by an exception.
 ///
 /// The proc-macro [`take_exception`] should be used to create an implementor of this trait.
 ///

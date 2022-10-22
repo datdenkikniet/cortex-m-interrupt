@@ -1,4 +1,6 @@
-# cortex-m-interrupt: function-like, trait-based interrupt handler registration.
+# cortex-m-interrupt
+
+###  Function-like, trait-based interrupt handler registration.
 
 This crate provides a method of delegating creation of occupations, and attempts to improve pains associated with creating registrations.
 
@@ -8,9 +10,15 @@ To help explain the use case of this crate, we use the following definitions:
 1. a registration: the function pointer placed in an interrupt vector, the declaration of an interrupt handler.
 2. an occupation: the code that should run when servicing an interrupt, the body of an interrupt handler.
 
+## The problem that this crate tries to solve.
 
-### An example
-Using the `cortex_m_rt` crate:
+To demonstrate the problem that this crate tries to solve, we will come up with an example use case.
+
+Our goal with the use case is:
+1. Configure the `SysTick` interrupt so that it triggers once every `1337` cycles.
+2. Increment a counter every time the `SysTick` interrupt occurs.
+
+When using the `cortex_m_rt` crate, we would do something like this:
 ```rust,ignore
 # fn systick_reload(_: u32) {}
 # fn setup_systick_exception(_: u32) {}
@@ -49,15 +57,15 @@ pub fn systick_reload(reload_value: u32) {
 }
 ```
 
-In the above example:
-1. There is no semantic connection between `setup_systick_exception` and the registration/occupation, besides naming.
-2. The responsibility of adding the correct occupation falls entirely on the person writing the program.
-3. The maintainer of the crate that provides `setup_systick_exception` and `systick_reload` has no control over the occupation.
-4. There is very little indirection when it comes to calling interrupt handlers.
+In this example:
+1. There is no semantic connection between `setup_systick_exception` and the registration/occupation besides naming and possibly documentation.
+2. The responsibility of adding the correct occupation to the correct registration falls entirely on the person writing the program.
+3. The maintainer of the crate that provides `setup_systick_exception` and `systick_reload` has no control over the occupation or registration.
+4. There is no need for a trampoline to setup up the interrupt handler.
 
 ### A solution?
 
-To represent registrations, the `InterruptHandle`, `NvicInterruptHandle`, and `ExceptionHandle` traits are provided. They then be used to insert occupations in a more dynamic way.
+To represent registrations, the `InterruptHandle`, `NvicInterruptHandle`, and `ExceptionHandle` traits are provided. They can be used to insert occupations in a more dynamic way.
 
 These traits allow for the following:
 1. Code that wishes to provide an occupation without directly creating a registration can be written by requiring that user code provides an registration.
@@ -66,7 +74,8 @@ These traits allow for the following:
 To alleviate difficulties with creating registrations, the `take_nvic_interrupt` and `take_exception` proc-macros are provided. They perform the less self explanatory parts of the setting up a registration, and provide an implementor of `NvicInterruptHandle` and `ExceptionHandle`, respectively.
 
 ### A revised example
-In the user crate:
+
+With these new tools, we can rewrite our code to look as follows:
 ```rust,ignore
 # fn setup_systick_exception<T: cortex_m_interrupt::InterruptHandle>(_: u32, _: T, _: fn()) {}
 use cortex_m_rt::entry;
@@ -134,4 +143,12 @@ fn systick_reload(reload_value: u32) {
 
 In the revised example:
 1. There is a more defined semantic connection between the registration and the occupation.
-2. The implementor of `setup_systick_exception` has full control over what is put into the occupation, and can optionally allow user code to perform some extra actions.
+2. The implementor of `setup_systick_exception` has full control over the occupation, and can optionally allow user code to perform some extra actions.
+3. The implementor of `setup_systick_exception` can verify that the correct registration is passed to it.
+4. A trampoline is now required in the interrupt handler, adding ~5 cycles of extra processing when an interrupt occurs.
+
+### Main differences
+The main differences between the `cortex-m-rt` approach and what `cortex-m-interrupt` provides are the following:
+1. `cortex-m-interrupt` offers a way of creating clearer separation of responsibilities when it comes to registering interrupt handlers.
+2. The traits provided by `cortex-m-interrupt` support a tighter semantic connection between creating a registration and creating an occupation.
+3. The method provided by `cortex-m-rt` has slightly less overhead as it does not require a trampoline. 

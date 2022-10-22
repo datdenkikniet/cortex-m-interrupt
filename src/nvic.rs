@@ -2,7 +2,7 @@ use cortex_m::{interrupt::InterruptNumber, peripheral::NVIC};
 
 use crate::InterruptHandle;
 
-/// An interrupt handle bound to an [`NVIC`] interrupt.
+/// An handle that can be used to configure the occupation of an [`NVIC`] interrupt.
 ///
 /// The proc-macro [`take_nvic_interrupt`] should be used to create
 /// an implementor of this trait.
