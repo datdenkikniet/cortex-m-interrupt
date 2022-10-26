@@ -2,18 +2,19 @@
 name = "cortex-m-interrupt"
 version = "0.1.0"
 edition = "2021"
-
-[package.metadata.docs.rs]
-features = ["unstable-doc-cfg"]
-
-[features]
-unstable-doc-cfg = [ ]
+authors = [ "Johannes Draaijer <jcdra1@gmail.com>", "Emil Fresk <emil.fresk@gmail.com>" ]
+description = "Function-like, trait-based interrupt handler registration."
+keywords = [ "embedded", "cortex-m", "interrupt" ]
+categories = [ "embedded", "no-std" ]
+homepage = "https://github.com/datdenkikniet/cortex-m-interrupt"
+documentation = "https://docs.rs/cortex-m-interrupt"
+repository = "https://github.com/datdenkikniet/cortex-m-interrupt"
+license = "MIT OR Apache-2.0"
 
 [dependencies]
-cortex-m-interrupt-macro = { path = "./cortex-m-interrupt-macro" }
+cortex-m-interrupt-macro = "0.1.0"
 cortex-m = "0.7"
 cortex-m-rt = "0.7"
-doc-cfg = "0.1"
 
 [dev-dependencies]
 stm32f1xx-hal = { version = "0.9", features = [ "stm32f107" ] }

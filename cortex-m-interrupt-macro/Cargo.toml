@@ -2,6 +2,15 @@
 name = "cortex-m-interrupt-macro"
 version = "0.1.0"
 edition = "2021"
+authors = [ "Johannes Draaijer <jcdra1@gmail.com>", "Emil Fresk <emil.fresk@gmail.com>" ]
+description = "Macros for the cortex-m-interrupt crate"
+keywords = [ "embedded", "cortex-m", "interrupt" ]
+categories = [ "embedded", "no-std" ]
+documentation = "https://docs.rs/cortex-m-interrupt"
+homepage = "https://github.com/datdenkikniet/cortex-m-interrupt"
+repository = "https://github.com/datdenkikniet/cortex-m-interrupt"
+license = "MIT OR Apache-2.0"
+
 
 [lib]
 proc-macro = true
