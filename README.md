@@ -1,8 +1,17 @@
-# cortex-m-interrupt
-
-###  Function-like, trait-based interrupt handler registration.
+# Function-like, trait-based interrupt handler registration.
 
 This crate provides a method of delegating creation of occupations, and attempts to improve pains associated with creating registrations.
+
+### Usage
+
+As an end-user of this crate, you will want to use the [`take_nvic_interrupt`] and [`take_exception`] macros. These generate implementors of the [`NvicInterruptHandle`] and [`ExceptionHandle`] traits respectively, which can be passed to functions that make use of interrupts.
+
+To see information on how you can use [`InterruptHandle`], [`NvicInterruptHandle`] and [`ExceptionHandle`] refer to the docs on those traits.
+
+
+## The problem that this crate tries to solve.
+
+To demonstrate the problem that this crate tries to solve, we will use an example use case.
 
 ### Definitions
 
@@ -10,9 +19,7 @@ To help explain the use case of this crate, we use the following definitions:
 1. a registration: the function pointer placed in an interrupt vector, the declaration of an interrupt handler.
 2. an occupation: the code that should run when servicing an interrupt, the body of an interrupt handler.
 
-## The problem that this crate tries to solve.
-
-To demonstrate the problem that this crate tries to solve, we will come up with an example use case.
+### The usecase
 
 Our goal with the use case is:
 1. Configure the `SysTick` interrupt so that it triggers once every `1337` cycles.
@@ -65,13 +72,13 @@ In this example:
 
 ### A solution?
 
-To represent registrations, the `InterruptHandle`, `NvicInterruptHandle`, and `ExceptionHandle` traits are provided. They can be used to insert occupations in a more dynamic way.
+To represent registrations, the [`InterruptHandle`], [`NvicInterruptHandle`], and [`ExceptionHandle`] traits are provided. They can be used to insert occupations in a more dynamic way.
 
 These traits allow for the following:
 1. Code that wishes to provide an occupation without directly creating a registration can be written by requiring that user code provides an registration.
 2. Code that wishes to provide an occupation can verify that a provided registration is correct for the to-be-created occupation.
 
-To alleviate difficulties with creating registrations, the `take_nvic_interrupt` and `take_exception` proc-macros are provided. They perform the less self explanatory parts of the setting up a registration, and provide an implementor of `NvicInterruptHandle` and `ExceptionHandle`, respectively.
+To alleviate difficulties with creating registrations, the [`take_nvic_interrupt`] and [`take_exception`] proc-macros are provided. They perform the less self explanatory parts of the setting up a registration, and provide an implementor of [`NvicInterruptHandle`] and [`ExceptionHandle`], respectively.
 
 ### A revised example
 
