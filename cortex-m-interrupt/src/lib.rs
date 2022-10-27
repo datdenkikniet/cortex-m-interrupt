@@ -3,6 +3,7 @@
 #![cfg_attr(not(test), no_std)]
 
 // Re-exports
+pub use atomic_polyfill;
 pub use cortex_m;
 pub use cortex_m_rt::DefaultHandler_;
 

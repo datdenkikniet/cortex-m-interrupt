@@ -31,7 +31,7 @@ impl Take {
             {
                 struct Handle;
 
-                static REGISTERED: core::sync::atomic::AtomicBool = core::sync::atomic::AtomicBool::new(false);
+                static REGISTERED: ::cortex_m_interrupt::atomic_polyfill::AtomicBool = ::cortex_m_interrupt::atomic_polyfill::AtomicBool::new(false);
 
                 static mut HANDLER: fn() = || { unsafe { ::cortex_m_interrupt::DefaultHandler_()  } };
 
