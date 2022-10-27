@@ -71,21 +71,21 @@ impl TakeNvicInterrupt {
         let take_interrupt = crate::Take::new(interrupt_ident.ident.clone()).build();
 
         quote! {{
-            struct NvicInterruptHandle {
+            struct NvicInterruptRegistration {
                 priority: core::num::NonZeroU8,
             }
 
-            impl ::cortex_m_interrupt::InterruptHandle for NvicInterruptHandle {
+            impl ::cortex_m_interrupt::InterruptRegistration for NvicInterruptRegistration {
                 #[inline(always)]
-                fn register(self, f: fn()) {
-                    use ::cortex_m_interrupt::InterruptHandle;
+                fn occupy(self, f: fn()) {
+                    use ::cortex_m_interrupt::InterruptRegistration;
 
                     ::cortex_m_interrupt::cortex_m::interrupt::free(|_| unsafe {
                         let int_handle = #take_interrupt;
 
                         ::cortex_m_interrupt::cortex_m::peripheral::NVIC::mask(#interrupt_path);
 
-                        int_handle.register(f);
+                        int_handle.occupy(f);
 
                         let mut nvic: ::cortex_m_interrupt::cortex_m::peripheral::NVIC = unsafe { core::mem::transmute(()) };
                         #set_priority
@@ -95,11 +95,11 @@ impl TakeNvicInterrupt {
                 }
             }
 
-            impl ::cortex_m_interrupt::NvicInterruptHandle<#interrupt_type> for NvicInterruptHandle {
+            impl ::cortex_m_interrupt::NvicInterruptRegistration<#interrupt_type> for NvicInterruptRegistration {
                 const INTERRUPT_NUMBER: #interrupt_type = #interrupt_path;
             }
 
-            NvicInterruptHandle {
+            NvicInterruptRegistration {
                 // Note(unwrap): the macro verifies that `#priority` is not 0.
                 priority: core::num::NonZeroU8::new(#priority).unwrap(),
             }

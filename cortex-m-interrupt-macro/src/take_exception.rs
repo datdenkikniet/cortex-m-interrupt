@@ -27,22 +27,22 @@ impl TakeException {
         let exception = &self.exception;
 
         quote! {{
-            struct ExceptionHandle {
+            struct ExceptionRegistration {
                 exception: ::cortex_m_interrupt::cortex_m::peripheral::scb::Exception,
             }
 
-            impl ::cortex_m_interrupt::InterruptHandle for ExceptionHandle {
-                fn register(self, f: fn()) {
+            impl ::cortex_m_interrupt::InterruptRegistration for ExceptionRegistration {
+                fn occupy(self, f: fn()) {
                     let handle = #take;
-                    handle.register(f);
+                    handle.occupy(f);
                 }
             }
 
-            impl ::cortex_m_interrupt::ExceptionHandle for ExceptionHandle {
+            impl ::cortex_m_interrupt::ExceptionRegistration for ExceptionRegistration {
                 const EXCEPTION: ::cortex_m_interrupt::cortex_m::peripheral::scb::Exception = ::cortex_m_interrupt::cortex_m::peripheral::scb::Exception::#exception;
             }
 
-            ExceptionHandle {
+            ExceptionRegistration {
                 exception: ::cortex_m_interrupt::cortex_m::peripheral::scb::Exception::#exception,
             }
         }}

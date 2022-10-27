@@ -6,7 +6,7 @@
 pub use cortex_m;
 pub use cortex_m_rt::DefaultHandler_;
 
-/// Return an instance of an unnameable struct that implements [`NvicInterruptHandle`], which
+/// Return an instance of an unnameable struct that implements [`NvicInterruptRegistration`], which
 /// is bound to the interrupt specified by `interrupt` with logical priority `priority`.
 ///
 /// `interrupt` must name an enum variant of an enum that implements [`InterruptNumber`] with _at least_ 2 path segments.
@@ -33,7 +33,7 @@ pub use cortex_m_rt::DefaultHandler_;
 /// use cortex_m_interrupt::take_nvic_interrupt;
 ///
 /// // The value returned by `take_nvic_interrupt` will
-/// // always `impl cortex_m_interrupt::NvicInterruptHandle`.
+/// // always `impl cortex_m_interrupt::NvicInterruptRegistration`.
 /// let irq_handle = take_nvic_interrupt!(interrupt, priority);
 ///
 /// ```
@@ -48,7 +48,7 @@ pub use cortex_m_rt::DefaultHandler_;
 /// [`Interrupt::EXTI15_10`]: stm32f1xx_hal::pac::interrupt::EXTI15_10
 pub use cortex_m_interrupt_macro::take_nvic_interrupt;
 
-/// Return an instance of an unnameable struct that implements [`ExceptionHandle`], which
+/// Return an instance of an unnameable struct that implements [`ExceptionRegistration`], which
 /// is bound to the exception specified by `exception`.
 ///
 /// `exception` may be any of the variants of [`Exception`] (from [`cortex_m`]), except
@@ -63,7 +63,7 @@ pub use cortex_m_interrupt_macro::take_nvic_interrupt;
 /// use cortex_m_interrupt::take_exception;
 ///
 /// // The value returned by `take_exception` will
-/// // always `impl cortex_m_interrupt::ExceptionHandle`.
+/// // always `impl cortex_m_interrupt::ExceptionRegistration`.
 /// let exc_handle = take_exception!(exception);
 /// ```
 ///
@@ -77,18 +77,18 @@ pub use cortex_m_interrupt_macro::take_nvic_interrupt;
 pub use cortex_m_interrupt_macro::take_exception;
 
 mod exception;
-pub use exception::ExceptionHandle;
+pub use exception::ExceptionRegistration;
 
 mod nvic;
-pub use nvic::{determine_prio_bits, logical2hw, NvicInterruptHandle};
+pub use nvic::{determine_prio_bits, logical2hw, NvicInterruptRegistration};
 
 /// A handle that can be used to configure the occupation of an interrupt.
 ///
-/// Creating an implementor of [`InterruptHandle`] can be done using the
+/// Creating an implementor of [`InterruptRegistration`] can be done using the
 /// [`take_nvic_interrupt`] or [`take_exception`] macros.
-pub trait InterruptHandle {
-    /// Configure the occupation of the interrupt associated with this [`InterruptHandle`].
-    /// 
+pub trait InterruptRegistration {
+    /// Occupy this registration with `f`.
+    ///
     /// Calling `register` more than once for the same interrupt will panic.
-    fn register(self, f: fn());
+    fn occupy(self, f: fn());
 }

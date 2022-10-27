@@ -41,11 +41,11 @@ impl Take {
                     (HANDLER)();
                 }
 
-               impl ::cortex_m_interrupt::InterruptHandle for Handle {
+               impl ::cortex_m_interrupt::InterruptRegistration for Handle {
                     #[inline(always)]
-                    fn register(self, f: fn()) {
+                    fn occupy(self, f: fn()) {
                         if REGISTERED.swap(true, core::sync::atomic::Ordering::Acquire) {
-                            panic!(stringify!(Attempted to register already-registered interrupt #irq))
+                            panic!(stringify!(Attempted to occupy already-occupied interrupt #irq))
                         }
 
                         unsafe {

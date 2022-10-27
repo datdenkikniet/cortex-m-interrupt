@@ -4,9 +4,9 @@ This crate provides a method of delegating creation of occupations, and attempts
 
 ### Usage
 
-As an end-user of this crate, you will want to use the [`take_nvic_interrupt`] and [`take_exception`] macros. These generate implementors of the [`NvicInterruptHandle`] and [`ExceptionHandle`] traits respectively, which can be passed to functions that make use of interrupts.
+As an end-user of this crate, you will want to use the [`take_nvic_interrupt`] and [`take_exception`] macros. These generate implementors of the [`NvicInterruptRegistration`] and [`ExceptionRegistration`] traits respectively, which can be passed to functions that make use of interrupts.
 
-To see information on how you can use [`InterruptHandle`], [`NvicInterruptHandle`] and [`ExceptionHandle`] refer to the docs on those traits.
+To see information on how you can use [`InterruptRegistration`], [`NvicInterruptRegistration`] and [`ExceptionRegistration`] refer to the docs on those traits.
 
 
 ## The problem that this crate tries to solve.
@@ -72,19 +72,19 @@ In this example:
 
 ### A solution?
 
-To represent registrations, the [`InterruptHandle`], [`NvicInterruptHandle`], and [`ExceptionHandle`] traits are provided. They can be used to insert occupations in a more dynamic way.
+To represent registrations, the [`InterruptRegistration`], [`NvicInterruptRegistration`], and [`ExceptionRegistration`] traits are provided. They can be used to insert occupations in a more dynamic way.
 
 These traits allow for the following:
 1. Code that wishes to provide an occupation without directly creating a registration can be written by requiring that user code provides an registration.
 2. Code that wishes to provide an occupation can verify that a provided registration is correct for the to-be-created occupation.
 
-To alleviate difficulties with creating registrations, the [`take_nvic_interrupt`] and [`take_exception`] proc-macros are provided. They perform the less self explanatory parts of the setting up a registration, and provide an implementor of [`NvicInterruptHandle`] and [`ExceptionHandle`], respectively.
+To alleviate difficulties with creating registrations, the [`take_nvic_interrupt`] and [`take_exception`] proc-macros are provided. They perform the less self explanatory parts of the setting up a registration, and provide an implementor of [`NvicInterruptRegistration`] and [`ExceptionRegistration`], respectively.
 
 ### A revised example
 
 With these new tools, we can rewrite our code to look as follows:
 ```rust,ignore
-# fn setup_systick_exception<T: cortex_m_interrupt::InterruptHandle>(_: u32, _: T, _: fn()) {}
+# fn setup_systick_exception<T: cortex_m_interrupt::InterruptRegistration>(_: u32, _: T, _: fn()) {}
 use cortex_m_rt::entry;
 use cortex_m::peripheral::scb::Exception::SysTick;
 
@@ -108,10 +108,10 @@ fn main() -> ! {
 
 In the crate providing `setup_systick_exception`:
 ```rust
-# use cortex_m_interrupt::ExceptionHandle;
-pub fn setup_systick_exception<Handle: ExceptionHandle>(
+# use cortex_m_interrupt::ExceptionRegistration;
+pub fn setup_systick_exception<Registration: ExceptionRegistration>(
     reload_value: u32,
-    handle: Handle,
+    handle: Registration,
     f: fn(),
 ) {
     // Assert that we've been given a handle to the correct
@@ -134,7 +134,7 @@ pub fn setup_systick_exception<Handle: ExceptionHandle>(
 
     core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::Release);
 
-    handle.register(|| {
+    handle.occupy(|| {
         systick_reload(unsafe { RELOAD_VALUE.assume_init() });
 
         // Call extra user code

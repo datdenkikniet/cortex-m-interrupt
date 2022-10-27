@@ -1,14 +1,15 @@
 use cortex_m::{interrupt::InterruptNumber, peripheral::NVIC};
 
-use crate::InterruptHandle;
+use crate::InterruptRegistration;
 
-/// An handle that can be used to configure the occupation of an [`NVIC`] interrupt.
+/// An [`NVIC`] interrupt registration.
 ///
 /// The proc-macro [`take_nvic_interrupt`] should be used to create
 /// an implementor of this trait.
 ///
 /// [`take_nvic_interrupt`]: super::take_nvic_interrupt
-pub trait NvicInterruptHandle<T: InterruptNumber>: InterruptHandle {
+pub trait NvicInterruptRegistration<T: InterruptNumber>: InterruptRegistration {
+    /// The interrupt number that this [`NvicInterruptRegistration`] is associated with.
     const INTERRUPT_NUMBER: T;
 
     fn number(&self) -> T {
