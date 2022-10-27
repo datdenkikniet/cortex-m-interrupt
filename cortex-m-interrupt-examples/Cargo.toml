@@ -1,0 +1,28 @@
+[package]
+name = "cortex-m-interrupt-examples"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+hal-selected = [ ]
+stm32f1xx-hal = [ "dep:stm32f1xx-hal", "hal-selected" ]
+stm32f4xx-hal = [ "dep:stm32f4xx-hal", "hal-selected" ]
+stm32f7xx-hal = [ "dep:stm32f7xx-hal", "hal-selected" ]
+nrf52832-hal = [ "dep:nrf52832-hal", "hal-selected" ]
+
+[dependencies]
+cortex-m = "0.7"
+cortex-m-rt = "0.7"
+cortex-m-interrupt = "0.2.0"
+embedded-hal = "0.2"
+atomic-polyfill = "1"
+stm32f1xx-hal = { version = "0.9", optional = true }
+stm32f4xx-hal = { version = "0.13", optional = true }
+stm32f7xx-hal = { version = "0.7", optional = true }
+nrf52832-hal = { version = "0.15", optional = true }
+
+[[example]]
+name = "take_nvic_interrupt"
+required-features = [ "hal-selected" ]
