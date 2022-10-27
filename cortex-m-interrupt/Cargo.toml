@@ -1,6 +1,6 @@
 [package]
 name = "cortex-m-interrupt"
-version = "0.1.1-git"
+version = "0.2.0"
 edition = "2021"
 authors = [ "Johannes Draaijer <jcdra1@gmail.com>", "Emil Fresk <emil.fresk@gmail.com>" ]
 description = "Function-like, trait-based interrupt handler registration."
@@ -12,7 +12,7 @@ repository = "https://github.com/datdenkikniet/cortex-m-interrupt"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-cortex-m-interrupt-macro = { path = "../cortex-m-interrupt-macro" }
+cortex-m-interrupt-macro = "0.2.0"
 cortex-m = "0.7"
 cortex-m-rt = "0.7"
 
