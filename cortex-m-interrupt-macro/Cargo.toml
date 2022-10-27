@@ -1,6 +1,6 @@
 [package]
 name = "cortex-m-interrupt-macro"
-version = "0.1.0"
+version = "0.1.1-git"
 edition = "2021"
 authors = [ "Johannes Draaijer <jcdra1@gmail.com>", "Emil Fresk <emil.fresk@gmail.com>" ]
 description = "Macros for the cortex-m-interrupt crate"
