@@ -12,7 +12,7 @@ repository = "https://github.com/datdenkikniet/cortex-m-interrupt"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-cortex-m-interrupt-macro = { path = "./cortex-m-interrupt-macro" }
+cortex-m-interrupt-macro = { path = "../cortex-m-interrupt-macro" }
 cortex-m = "0.7"
 cortex-m-rt = "0.7"
 

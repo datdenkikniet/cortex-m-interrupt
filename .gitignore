@@ -1,6 +1,3 @@
-/target
-/Cargo.lock
-/cortex-m-interrupt-macro/target
-/cortex-m-interrupt-macro/Cargo.lock
-/.vscode
-/cortex-m-interrupt-macro/.vscode
+/**/*target
+/**/*/Cargo.lock
+/**/*/.vscode
