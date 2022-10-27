@@ -1,6 +1,9 @@
 #![doc = include_str!("../README.md")]
 #![cfg_attr(feature = "unstable-doc-cfg", feature(doc_cfg))]
 #![cfg_attr(not(test), no_std)]
+#![warn(missing_docs)]
+
+mod occupation;
 
 // Re-exports
 pub use cortex_m;
