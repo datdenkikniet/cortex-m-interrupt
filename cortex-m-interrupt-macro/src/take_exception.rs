@@ -33,8 +33,8 @@ impl TakeException {
 
             impl ::cortex_m_interrupt::InterruptRegistration for ExceptionRegistration {
                 fn occupy(self, f: fn()) {
-                    let handle = #take;
-                    handle.occupy(f);
+                    let registration = #take;
+                    registration.occupy(f);
                 }
             }
 

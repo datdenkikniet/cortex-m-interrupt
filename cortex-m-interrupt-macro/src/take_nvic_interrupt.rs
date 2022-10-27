@@ -81,11 +81,11 @@ impl TakeNvicInterrupt {
                     use ::cortex_m_interrupt::InterruptRegistration;
 
                     ::cortex_m_interrupt::cortex_m::interrupt::free(|_| unsafe {
-                        let int_handle = #take_interrupt;
+                        let registration = #take_interrupt;
 
                         ::cortex_m_interrupt::cortex_m::peripheral::NVIC::mask(#interrupt_path);
 
-                        int_handle.occupy(f);
+                        registration.occupy(f);
 
                         let mut nvic: ::cortex_m_interrupt::cortex_m::peripheral::NVIC = unsafe { core::mem::transmute(()) };
                         #set_priority

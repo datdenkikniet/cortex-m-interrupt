@@ -97,11 +97,11 @@ fn increase_counter() {
 #[entry]
 fn main() -> ! {
     // We create the registration
-    let systick_handle = cortex_m_interrupt::take_exception!(SysTick);
+    let systick_registration = cortex_m_interrupt::take_exception!(SysTick);
     // And pass it to some function that will do some configuration and
     // provide a occupation for that registration. It also allows us to
     // inject our own expansion to the occupation.
-    setup_systick_exception(1337, systick_handle, increase_counter);
+    setup_systick_exception(1337, systick_registration, increase_counter);
     loop {}
 }
 ```
@@ -111,14 +111,14 @@ In the crate providing `setup_systick_exception`:
 # use cortex_m_interrupt::ExceptionRegistration;
 pub fn setup_systick_exception<Registration: ExceptionRegistration>(
     reload_value: u32,
-    handle: Registration,
+    registration: Registration,
     f: fn(),
 ) {
-    // Assert that we've been given a handle to the correct
+    // Assert that we've been given a registration of the correct
     // exception/interrupt.
     assert_eq!(
         cortex_m::peripheral::scb::Exception::SysTick,
-        handle.exception()
+        registration.exception()
     );
 
     /* Setup systick so that it triggers the SysTick interrupt
@@ -134,7 +134,7 @@ pub fn setup_systick_exception<Registration: ExceptionRegistration>(
 
     core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::Release);
 
-    handle.occupy(|| {
+    registration.occupy(|| {
         systick_reload(unsafe { RELOAD_VALUE.assume_init() });
 
         // Call extra user code

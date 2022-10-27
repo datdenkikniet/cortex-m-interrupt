@@ -10,9 +10,9 @@ use cortex_m_interrupt::{take_nvic_interrupt, InterruptRegistration};
 use stm32f1xx_hal::device::Interrupt;
 
 fn _test() {
-    let handle = take_nvic_interrupt!(Interrupt::EXTI15_10, 5);
+    let registration = take_nvic_interrupt!(Interrupt::EXTI15_10, 5);
 
-    handle.occupy(|| panic!("In NVIC interrupt"));
+    registration.occupy(|| panic!("In NVIC interrupt"));
 }
 
 #[cortex_m_rt::entry]

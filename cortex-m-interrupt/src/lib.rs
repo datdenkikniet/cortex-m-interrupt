@@ -16,7 +16,7 @@ pub use cortex_m_rt::DefaultHandler_;
 ///
 /// The returned struct has the following features:
 /// * Calling `register` more than once for the same `Interrupt` panics.
-/// * The bound interrupt will be masked in the NVIC before configuring the occupation of the handler, and
+/// * The bound interrupt will be masked in the NVIC before configuring the occupation of the registration, and
 /// unmasked after.
 /// * The the amount of available NVIC priority bits is determined runtime.
 ///
@@ -34,14 +34,14 @@ pub use cortex_m_rt::DefaultHandler_;
 ///
 /// // The value returned by `take_nvic_interrupt` will
 /// // always `impl cortex_m_interrupt::NvicInterruptRegistration`.
-/// let irq_handle = take_nvic_interrupt!(interrupt, priority);
+/// let registration = take_nvic_interrupt!(interrupt, priority);
 ///
 /// ```
 ///
 /// ```rust,no_run
 /// // For example, using stm32f1xx hal:
 /// use stm32f1xx_hal::pac::interrupt;
-/// let handle = cortex_m_interrupt::take_nvic_interrupt!(interrupt::EXTI15_10, 7);
+/// let registration = cortex_m_interrupt::take_nvic_interrupt!(interrupt::EXTI15_10, 7);
 /// ```
 ///
 /// [`InterruptNumber`]: cortex_m::interrupt::InterruptNumber
@@ -64,12 +64,12 @@ pub use cortex_m_interrupt_macro::take_nvic_interrupt;
 ///
 /// // The value returned by `take_exception` will
 /// // always `impl cortex_m_interrupt::ExceptionRegistration`.
-/// let exc_handle = take_exception!(exception);
+/// let registration = take_exception!(exception);
 /// ```
 ///
 /// ```rust,no_run
 /// // For example:
-/// let handle = cortex_m_interrupt::take_exception!(SysTick);
+/// let registration = cortex_m_interrupt::take_exception!(SysTick);
 /// ```
 ///
 /// [`Exception`]: cortex_m::peripheral::scb::Exception
@@ -82,7 +82,7 @@ pub use exception::ExceptionRegistration;
 mod nvic;
 pub use nvic::{determine_prio_bits, logical2hw, NvicInterruptRegistration};
 
-/// A handle that can be used to configure the occupation of an interrupt.
+/// An interrupt registration, whose occupation can be configured.
 ///
 /// Creating an implementor of [`InterruptRegistration`] can be done using the
 /// [`take_nvic_interrupt`] or [`take_exception`] macros.
