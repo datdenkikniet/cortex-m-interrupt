@@ -15,6 +15,7 @@ license = "MIT OR Apache-2.0"
 cortex-m-interrupt-macro = { path = "../cortex-m-interrupt-macro" }
 cortex-m = "0.7"
 cortex-m-rt = "0.7"
+atomic-polyfill = "1.0.1"
 
 [dev-dependencies]
 stm32f1xx-hal = { version = "0.9", features = [ "stm32f107" ] }
