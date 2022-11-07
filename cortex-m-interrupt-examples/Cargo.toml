@@ -15,7 +15,7 @@ nrf52832-hal = [ "dep:nrf52832-hal", "hal-selected" ]
 [dependencies]
 cortex-m = "0.7"
 cortex-m-rt = "0.7"
-cortex-m-interrupt = "0.2.0"
+cortex-m-interrupt = { path = "../cortex-m-interrupt", version = "0.3.0" }
 embedded-hal = "0.2"
 atomic-polyfill = "1"
 stm32f1xx-hal = { version = "0.9", optional = true }
