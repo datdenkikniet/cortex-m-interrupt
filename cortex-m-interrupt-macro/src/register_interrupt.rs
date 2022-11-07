@@ -2,6 +2,7 @@ use syn::{parse::Parse, Error, Ident, Path, Token};
 
 #[derive(Debug)]
 pub struct RegisterInterrupt {
+    struct_name: Ident,
     interrupt_full_path: Path,
     interrupt_enum: Path,
     interrupt_name: Ident,
@@ -11,6 +12,9 @@ pub struct RegisterInterrupt {
 impl Parse for RegisterInterrupt {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         // Extract syntax
+        let struct_name: Ident = input.parse()?;
+        let _comma: Token![,] = input.parse()?;
+
         let mut irq: Path = input.parse()?;
         let _colon: Token![->] = input.parse()?;
 
@@ -52,6 +56,7 @@ impl Parse for RegisterInterrupt {
         }
 
         Ok(Self {
+            struct_name,
             interrupt_full_path,
             interrupt_enum: irq,
             interrupt_name,
@@ -62,16 +67,13 @@ impl Parse for RegisterInterrupt {
 
 impl RegisterInterrupt {
     pub fn codegen(&self) -> proc_macro2::TokenStream {
-        println!("{:#?}", self);
-
         let RegisterInterrupt {
+            struct_name,
             interrupt_full_path,
             interrupt_enum,
             interrupt_name,
             hal_drivers,
         } = self;
-
-        let handle_ident = Ident::new(&format!("{}Token", interrupt_name), interrupt_name.span());
 
         // Codegen const asserts for vector <-> driver connection
         let const_asserts: Vec<_> = hal_drivers
@@ -119,29 +121,25 @@ impl RegisterInterrupt {
             .iter()
             .map(|driver| {
                 quote::quote! {
-                    unsafe impl cortex_m_interrupt::InterruptToken<#driver> for #handle_ident {}
+                    unsafe impl cortex_m_interrupt::InterruptToken<#driver> for #struct_name {}
                 }
             })
             .collect();
 
         quote::quote! {
-            {
-                #(#const_asserts)*
+            #(#const_asserts)*
 
-                #[no_mangle]
-                #[allow(non_snake_case)]
-                unsafe extern "C" fn #interrupt_name() {
-                    #(#on_interrupts)*
-                }
-
-
-                #[derive(Debug, Copy, Clone)]
-                struct #handle_ident;
-
-                #(#handle_impls)*
-
-                #handle_ident
+            #[no_mangle]
+            #[allow(non_snake_case)]
+            unsafe extern "C" fn #interrupt_name() {
+                #(#on_interrupts)*
             }
+
+
+            #[derive(Debug, Copy, Clone)]
+            pub struct #struct_name;
+
+            #(#handle_impls)*
         }
     }
 }

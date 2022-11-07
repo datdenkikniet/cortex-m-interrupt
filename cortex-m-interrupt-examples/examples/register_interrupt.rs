@@ -6,13 +6,14 @@ fn panic_handler(_: &core::panic::PanicInfo) -> ! {
     loop {}
 }
 
+// Connect to a peripheral with 1:1 IRQ and driver relationship
+cortex_m_interrupt::register_interrupt!(SpiToken, hal::pac::Interrupt::Spi0 -> hal::Spi);
+
+// Connect to a peripheral with 1:2 IRQ and driver relationship
+cortex_m_interrupt::register_interrupt!(Uart01Token, hal::pac::Interrupt::Uart0_1 -> hal::Uart0, hal::Uart1);
+
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    // Connect to a peripheral with 1:1 IRQ and driver relationship
-    let token = cortex_m_interrupt::register_interrupt!(hal::pac::Interrupt::Spi0 -> hal::Spi);
-
-    // Connect to a peripheral with 1:2 IRQ and driver relationship
-    let token2 = cortex_m_interrupt::register_interrupt!(hal::pac::Interrupt::Uart0_1 -> hal::Uart0, hal::Uart1);
     loop {}
 }
 
