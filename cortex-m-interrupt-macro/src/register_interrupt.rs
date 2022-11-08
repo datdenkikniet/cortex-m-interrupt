@@ -93,7 +93,7 @@ impl RegisterInterrupt {
                     .join("::");
 
                 let panic_string =
-                    format!("The driver `{ds}` does not request the proveided interrupt `{intn}`");
+                    format!("The driver `{ds}` does not request the provided interrupt `{intn}`");
 
                 quote::quote! {
                     const _: () = {
