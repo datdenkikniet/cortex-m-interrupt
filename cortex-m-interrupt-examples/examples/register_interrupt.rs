@@ -10,7 +10,19 @@ fn panic_handler(_: &core::panic::PanicInfo) -> ! {
 cortex_m_interrupt::register_interrupt!(SpiToken, hal::pac::Interrupt::Spi0 -> hal::Spi);
 
 // Connect to a peripheral with 1:2 IRQ and driver relationship
-cortex_m_interrupt::register_interrupt!(Uart01Token, hal::pac::Interrupt::Uart0_1 -> hal::Uart0, hal::Uart1);
+cortex_m_interrupt::register_interrupt!(Uart01Token,
+    hal::pac::Interrupt::Uart0_1 -> hal::Uart0,
+    hal::pac::Interrupt::Uart0_1 -> hal::Uart1,
+);
+
+// Mega peripheral
+cortex_m_interrupt::register_interrupt!(MegaTimerToken,
+    Interrupt::TIM1_BRK -> hal::Brk<TIM1>,
+    Interrupt::TIM1_CC -> hal::Cc<TIM1>,
+    Interrupt::TIM1_TRG_COM_TIM11 -> hal::Trg<Tim1>,
+    Interrupt::TIM1_TRG_COM_TIM11 -> hal::Com<Tim1>,
+    Interrupt::TIM1_UP -> hal::Up<TIM1>,
+);
 
 // Connect with an exception
 use cortex_m::peripheral::scb::Exception;
@@ -69,6 +81,7 @@ pub mod pac {
         }
     }
 
+    #[allow(non_camel_case_types)]
     pub enum Interrupt {
         Int1,
         Int2,
@@ -76,6 +89,10 @@ pub mod pac {
         Spi0,
         Uart0_1,
         Uart2,
+        TIM1_BRK,
+        TIM1_CC,
+        TIM1_TRG_COM_TIM11,
+        TIM1_UP,
     }
 }
 
