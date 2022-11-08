@@ -6,22 +6,24 @@ fn panic_handler(_: &core::panic::PanicInfo) -> ! {
     loop {}
 }
 
+use hal::pac::Interrupt;
+
 // Connect to a peripheral with 1:1 IRQ and driver relationship
-cortex_m_interrupt::register_interrupt!(SpiToken, hal::pac::Interrupt::Spi0 -> hal::Spi);
+cortex_m_interrupt::register_interrupt!(SpiToken, Interrupt::Spi0 -> hal::Spi);
 
 // Connect to a peripheral with 1:2 IRQ and driver relationship
 cortex_m_interrupt::register_interrupt!(Uart01Token,
-    hal::pac::Interrupt::Uart0_1 -> hal::Uart0,
-    hal::pac::Interrupt::Uart0_1 -> hal::Uart1,
+    Interrupt::Uart0_1 -> hal::Uart0,
+    Interrupt::Uart0_1 -> hal::Uart1,
 );
 
 // Mega peripheral
 cortex_m_interrupt::register_interrupt!(MegaTimerToken,
-    hal::pac::Interrupt::TIM1_BRK -> hal::Brk<pac::TIM1>,
-    hal::pac::Interrupt::TIM1_CC -> hal::Cc<pac::TIM1>,
-    hal::pac::Interrupt::TIM1_TRG_COM_TIM11 -> hal::Trg<pac::TIM1>,
-    hal::pac::Interrupt::TIM1_TRG_COM_TIM11 -> hal::Com<pac::TIM1>,
-    hal::pac::Interrupt::TIM1_UP -> hal::Up<pac::TIM1>,
+    Interrupt::TIM1_BRK -> hal::Brk<pac::TIM1>,
+    Interrupt::TIM1_CC -> hal::Cc<pac::TIM1>,
+    Interrupt::TIM1_TRG_COM_TIM11 -> hal::Trg<pac::TIM1>,
+    Interrupt::TIM1_TRG_COM_TIM11 -> hal::Com<pac::TIM1>,
+    Interrupt::TIM1_UP -> hal::Up<pac::TIM1>,
 );
 
 // Connect with an exception
