@@ -12,7 +12,7 @@ repository = "https://github.com/datdenkikniet/cortex-m-interrupt"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-cortex-m-interrupt-macro = { path = "../cortex-m-interrupt-macro" }
+cortex-m-interrupt-macro = { path = "../cortex-m-interrupt-macro", version = "0.3.0" }
 
 [dev-dependencies]
 stm32f1xx-hal = { version = "0.9", features = [ "stm32f107" ] }

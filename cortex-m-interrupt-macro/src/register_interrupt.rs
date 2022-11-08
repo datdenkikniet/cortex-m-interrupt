@@ -14,13 +14,11 @@ use syn::{parse::Parse, spanned::Spanned, Error, Ident, Path, Token};
 // );
 //
 
-#[derive(Debug)]
 struct Connection {
     interrupt_full_path: Path,
     hal_drivers: Vec<Path>,
 }
 
-#[derive(Debug)]
 pub struct RegisterInterrupt {
     struct_name: Ident,
     interrupt_to_hal_driver: HashMap<Ident, Connection>,
