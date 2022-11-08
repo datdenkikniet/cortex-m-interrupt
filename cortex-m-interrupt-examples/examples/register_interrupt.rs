@@ -41,6 +41,8 @@ fn main() -> ! {
 
     let systick_delay = hal::SysTickDelay::new(c.SYST, SystickToken);
 
+    let tim1 = hal::Tim1::new(p.tim1, MegaTimerToken);
+
     // Fails
     let uart2 = hal::Uart2::new(p.uart2, Uart01Token);
 
@@ -218,6 +220,20 @@ pub mod hal {
     //
     // -- Mega timer
     //
+
+    pub struct Tim1 {}
+
+    impl Tim1 {
+        pub fn new<T>(tim: pac::TIM1, irqs: T)
+        where
+            T: InterruptToken<Brk<pac::TIM1>>
+                + InterruptToken<Cc<pac::TIM1>>
+                + InterruptToken<Com<pac::TIM1>>
+                + InterruptToken<Trg<pac::TIM1>>
+                + InterruptToken<Up<pac::TIM1>>,
+        {
+        }
+    }
 
     pub struct Brk<TIMER> {
         _p: PhantomData<TIMER>,
