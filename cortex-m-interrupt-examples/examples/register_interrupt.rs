@@ -14,6 +14,17 @@ cortex_m_interrupt::register_interrupt!(Uart01Token, hal::pac::Interrupt::Uart0_
 
 #[cortex_m_rt::entry]
 fn main() -> ! {
+    let p = pac::Peripherals::take();
+
+    // Works
+    let spi1 = hal::Spi::new(p.spi0, SpiToken);
+
+    let uart0 = hal::Uart0::new(p.uart0, Uart01Token);
+    let uart1 = hal::Uart1::new(p.uart1, Uart01Token);
+
+    // Fails
+    let uart2 = hal::Uart2::new(p.uart2, Uart01Token);
+
     loop {}
 }
 
@@ -32,6 +43,24 @@ pub mod pac {
     pub struct UART1;
 
     pub struct UART2;
+
+    pub struct Peripherals {
+        pub spi0: SPI0,
+        pub uart0: UART0,
+        pub uart1: UART1,
+        pub uart2: UART2,
+    }
+
+    impl Peripherals {
+        pub fn take() -> Self {
+            Peripherals {
+                spi0: SPI0,
+                uart0: UART0,
+                uart1: UART1,
+                uart2: UART2,
+            }
+        }
+    }
 
     pub enum Interrupt {
         Int1,
