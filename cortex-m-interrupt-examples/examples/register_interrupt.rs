@@ -12,15 +12,22 @@ cortex_m_interrupt::register_interrupt!(SpiToken, hal::pac::Interrupt::Spi0 -> h
 // Connect to a peripheral with 1:2 IRQ and driver relationship
 cortex_m_interrupt::register_interrupt!(Uart01Token, hal::pac::Interrupt::Uart0_1 -> hal::Uart0, hal::Uart1);
 
+// Connect with an exception
+use cortex_m::peripheral::scb::Exception;
+cortex_m_interrupt::register_interrupt!(SystickToken, Exception::SysTick -> hal::SysTickDelay);
+
 #[cortex_m_rt::entry]
 fn main() -> ! {
     let p = pac::Peripherals::take();
+    let c = cortex_m::Peripherals::take().unwrap();
 
     // Works
     let spi1 = hal::Spi::new(p.spi0, SpiToken);
 
     let uart0 = hal::Uart0::new(p.uart0, Uart01Token);
     let uart1 = hal::Uart1::new(p.uart1, Uart01Token);
+
+    let systick_delay = hal::SysTickDelay::new(c.SYST, SystickToken);
 
     // Fails
     let uart2 = hal::Uart2::new(p.uart2, Uart01Token);
@@ -73,6 +80,7 @@ pub mod pac {
 }
 
 pub mod hal {
+    use cortex_m::peripheral::scb::Exception;
     use cortex_m_interrupt::{InterruptRegistration, InterruptToken};
 
     pub use super::pac;
@@ -155,6 +163,29 @@ pub mod hal {
 
     impl InterruptRegistration<pac::Interrupt> for Uart2 {
         const VECTOR: pac::Interrupt = pac::Interrupt::Uart2;
+
+        fn on_interrupt() {
+            // Doing stuff ...
+        }
+    }
+
+    //
+    // -- Exception driver (systick)
+    //
+
+    pub struct SysTickDelay {}
+
+    impl SysTickDelay {
+        pub fn new<Handle>(syst: cortex_m::peripheral::SYST, interrupt_handle: Handle) -> Self
+        where
+            Handle: InterruptToken<SysTickDelay>,
+        {
+            SysTickDelay {}
+        }
+    }
+
+    impl InterruptRegistration<Exception> for SysTickDelay {
+        const VECTOR: Exception = Exception::SysTick;
 
         fn on_interrupt() {
             // Doing stuff ...
