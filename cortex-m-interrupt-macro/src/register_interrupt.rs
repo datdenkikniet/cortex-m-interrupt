@@ -1,6 +1,6 @@
+use quote::quote;
 use std::collections::HashMap;
-
-use syn::{parse::Parse, Error, Ident, Path, Token};
+use syn::{parse::Parse, spanned::Spanned, Error, Ident, Path, Token};
 
 //
 // syntax
@@ -62,27 +62,25 @@ impl Parse for RegisterInterrupt {
 
         // Error check
 
-        // // We need to get the interrupt enum's path and interrupt ident
-        // if irq.segments.len() < 2 {
-        //     return Err(Error::new(
-        //         input.span(),
-        //         "Interrupt path is a single identifier, this marcro needs to know the path to the interrupt enum and the interrupts name, e.g. `hal::pac::Interrupt::Uart0`",
-        //     ));
-        // }
+        // We need to get the interrupt enum's path and interrupt ident
+        for (_, v) in &interrupt_to_hal_driver {
+            if v.interrupt_full_path.segments.len() < 2 {
+                return Err(Error::new(
+                v.interrupt_full_path.span(),
+                "Interrupt path is a single identifier, this marcro needs to know the path to the interrupt enum and the interrupts name, e.g. `hal::pac::Interrupt::Uart0`",
+            ));
+            }
+        }
 
-        // let interrupt_full_path = irq.clone();
-        // let interrupt_name = irq.segments.pop().unwrap().into_value().ident;
+        // We need at least one driver
+        let num_drivers: usize = interrupt_to_hal_driver
+            .iter()
+            .map(|v| v.1.hal_drivers.len())
+            .sum();
 
-        // let v = irq.segments.pop().unwrap().into_value();
-        // irq.segments.push_value(v);
-
-        // // We need at least one driver
-        // if hal_drivers.is_empty() {
-        //     return Err(Error::new(
-        //         input.span(),
-        //         "Expected path to event (interrupt or exception) as first argument.",
-        //     ));
-        // }
+        if num_drivers == 0 {
+            return Err(Error::new(input.span(), "No interrupt drivers listed"));
+        }
 
         Ok(Self {
             struct_name,
@@ -98,70 +96,93 @@ impl RegisterInterrupt {
             interrupt_to_hal_driver,
         } = self;
 
-        // // Codegen const asserts for vector <-> driver connection
-        // let const_asserts: Vec<_> = hal_drivers
-        //     .iter()
-        //     .map(|driver| {
-        //         let ds = driver
-        //             .segments
-        //             .iter()
-        //             .map(|seg| format!("{}", seg.ident))
-        //             .collect::<Vec<String>>()
-        //             .join("::");
-        //         let intn = interrupt_full_path
-        //             .segments
-        //             .iter()
-        //             .map(|seg| format!("{}", seg.ident))
-        //             .collect::<Vec<String>>()
-        //             .join("::");
+        // Codegen const asserts for vector <-> driver connection
 
-        //         let panic_string =
-        //             format!("The driver `{ds}` does not request the provided interrupt `{intn}`");
+        let mut const_asserts = Vec::new();
+        let mut interrupt_registrations = Vec::new();
+        let mut handle_impls = Vec::new();
 
-        //         quote::quote! {
-        //             const _: () = {
-        //                 match <#driver as cortex_m_interrupt::InterruptRegistration<#interrupt_enum>>::VECTOR {
-        //                     #interrupt_full_path => {}
-        //                     _ => panic!(#panic_string),
-        //                 }
-        //             };
-        //         }
-        //     })
-        //     .collect();
+        for (interrupt_name, v) in interrupt_to_hal_driver {
+            let hal_drivers = &v.hal_drivers;
+            let interrupt_full_path = &v.interrupt_full_path;
 
-        // // Codegen interrupt to driver calls
-        // let on_interrupts: Vec<_> = hal_drivers
-        //     .iter()
-        //     .map(|driver| {
-        //         quote::quote! {
-        //             <#driver as cortex_m_interrupt::InterruptRegistration<#interrupt_enum>>::on_interrupt();
-        //         }
-        //     })
-        //     .collect();
+            let mut interrupt_enum = interrupt_full_path.clone();
+            interrupt_enum.segments.pop().unwrap().into_value().ident;
+            let v = interrupt_enum.segments.pop().unwrap().into_value();
+            interrupt_enum.segments.push_value(v);
 
-        // // Codegen trait impls for error checking
-        // let handle_impls: Vec<_> = hal_drivers
-        //     .iter()
-        //     .map(|driver| {
-        //         quote::quote! {
-        //             unsafe impl cortex_m_interrupt::InterruptToken<#driver> for #struct_name {}
-        //         }
-        //     })
-        //     .collect();
+            // Codegen interrupt to driver calls
+            let on_interrupts: Vec<_> = hal_drivers
+                .iter()
+                .map(|driver| {
+                    quote! {
+                        <#driver as cortex_m_interrupt::InterruptRegistration<#interrupt_enum>>::on_interrupt();
+                    }
+                })
+                .collect();
 
-        quote::quote! {
-            // #(#const_asserts)*
+            interrupt_registrations.push(quote! {
+                #[no_mangle]
+                #[allow(non_snake_case)]
+                unsafe extern "C" fn #interrupt_name() {
+                    #(#on_interrupts)*
+                }
+            });
 
-            // #[no_mangle]
-            // #[allow(non_snake_case)]
-            // unsafe extern "C" fn #interrupt_name() {
-            //     #(#on_interrupts)*
-            // }
+            let cs: Vec<_> = hal_drivers
+            .iter()
+            .map(|driver| {
+                let ds = driver
+                    .segments
+                    .iter()
+                    .map(|seg| format!("{}", seg.ident))
+                    .collect::<Vec<String>>()
+                    .join("::");
+                let intn = interrupt_full_path
+                    .segments
+                    .iter()
+                    .map(|seg| format!("{}", seg.ident))
+                    .collect::<Vec<String>>()
+                    .join("::");
+
+                let panic_string =
+                    format!("The driver `{ds}` does not request the provided interrupt `{intn}`");
+
+                quote! {
+                    const _: () = {
+                        match <#driver as cortex_m_interrupt::InterruptRegistration<#interrupt_enum>>::VECTOR {
+                            #interrupt_full_path => {}
+                            _ => panic!(#panic_string),
+                        }
+                    };
+                }
+            })
+            .collect();
+
+            const_asserts.extend(cs);
+
+            // Codegen trait impls for error checking
+            let hi: Vec<_> = hal_drivers
+                .iter()
+                .map(|driver| {
+                    quote! {
+                        unsafe impl cortex_m_interrupt::InterruptToken<#driver> for #struct_name {}
+                    }
+                })
+                .collect();
+
+            handle_impls.extend(hi);
+        }
+
+        quote! {
+            #(#const_asserts)*
+
+            #(#interrupt_registrations)*
 
             #[derive(Debug, Copy, Clone)]
             pub struct #struct_name;
 
-            // #(#handle_impls)*
+            #(#handle_impls)*
         }
     }
 }

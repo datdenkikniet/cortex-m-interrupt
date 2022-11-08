@@ -17,11 +17,11 @@ cortex_m_interrupt::register_interrupt!(Uart01Token,
 
 // Mega peripheral
 cortex_m_interrupt::register_interrupt!(MegaTimerToken,
-    Interrupt::TIM1_BRK -> hal::Brk<TIM1>,
-    Interrupt::TIM1_CC -> hal::Cc<TIM1>,
-    Interrupt::TIM1_TRG_COM_TIM11 -> hal::Trg<Tim1>,
-    Interrupt::TIM1_TRG_COM_TIM11 -> hal::Com<Tim1>,
-    Interrupt::TIM1_UP -> hal::Up<TIM1>,
+    hal::pac::Interrupt::TIM1_BRK -> hal::Brk<pac::TIM1>,
+    hal::pac::Interrupt::TIM1_CC -> hal::Cc<pac::TIM1>,
+    hal::pac::Interrupt::TIM1_TRG_COM_TIM11 -> hal::Trg<pac::TIM1>,
+    hal::pac::Interrupt::TIM1_TRG_COM_TIM11 -> hal::Com<pac::TIM1>,
+    hal::pac::Interrupt::TIM1_UP -> hal::Up<pac::TIM1>,
 );
 
 // Connect with an exception
@@ -63,11 +63,14 @@ pub mod pac {
 
     pub struct UART2;
 
+    pub struct TIM1;
+
     pub struct Peripherals {
         pub spi0: SPI0,
         pub uart0: UART0,
         pub uart1: UART1,
         pub uart2: UART2,
+        pub tim1: TIM1,
     }
 
     impl Peripherals {
@@ -77,6 +80,7 @@ pub mod pac {
                 uart0: UART0,
                 uart1: UART1,
                 uart2: UART2,
+                tim1: TIM1,
             }
         }
     }
@@ -97,6 +101,8 @@ pub mod pac {
 }
 
 pub mod hal {
+    use core::marker::PhantomData;
+
     use cortex_m::peripheral::scb::Exception;
     use cortex_m_interrupt::{InterruptRegistration, InterruptToken};
 
@@ -203,6 +209,70 @@ pub mod hal {
 
     impl InterruptRegistration<Exception> for SysTickDelay {
         const VECTOR: Exception = Exception::SysTick;
+
+        fn on_interrupt() {
+            // Doing stuff ...
+        }
+    }
+
+    //
+    // -- Mega timer
+    //
+
+    pub struct Brk<TIMER> {
+        _p: PhantomData<TIMER>,
+    }
+
+    impl InterruptRegistration<pac::Interrupt> for Brk<pac::TIM1> {
+        const VECTOR: pac::Interrupt = pac::Interrupt::TIM1_BRK;
+
+        fn on_interrupt() {
+            // Doing stuff ...
+        }
+    }
+
+    pub struct Cc<TIMER> {
+        _p: PhantomData<TIMER>,
+    }
+
+    impl InterruptRegistration<pac::Interrupt> for Cc<pac::TIM1> {
+        const VECTOR: pac::Interrupt = pac::Interrupt::TIM1_CC;
+
+        fn on_interrupt() {
+            // Doing stuff ...
+        }
+    }
+
+    pub struct Trg<TIMER> {
+        _p: PhantomData<TIMER>,
+    }
+
+    impl InterruptRegistration<pac::Interrupt> for Trg<pac::TIM1> {
+        const VECTOR: pac::Interrupt = pac::Interrupt::TIM1_TRG_COM_TIM11;
+
+        fn on_interrupt() {
+            // Doing stuff ...
+        }
+    }
+
+    pub struct Com<TIMER> {
+        _p: PhantomData<TIMER>,
+    }
+
+    impl InterruptRegistration<pac::Interrupt> for Com<pac::TIM1> {
+        const VECTOR: pac::Interrupt = pac::Interrupt::TIM1_TRG_COM_TIM11;
+
+        fn on_interrupt() {
+            // Doing stuff ...
+        }
+    }
+
+    pub struct Up<TIMER> {
+        _p: PhantomData<TIMER>,
+    }
+
+    impl InterruptRegistration<pac::Interrupt> for Up<pac::TIM1> {
+        const VECTOR: pac::Interrupt = pac::Interrupt::TIM1_UP;
 
         fn on_interrupt() {
             // Doing stuff ...
